@@ -1,0 +1,2342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Masterflexo - Control Total Pro</title>
+    
+    <link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Masterflexo">
+<link rel="apple-touch-icon" href="logotipo-aplicación.png">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d47a1">
+
+<style>
+        :root {
+            --p-color: #0d47a1;
+            --s-color: #634E9B;
+            --bg: #f0f2f5;
+            --ws-color: #25d366;
+            --ws-prod: #ff9800;
+            --gear-gray: #bdc3c7;
+            --aqua-bg: #686CB0;
+            --aqua-text: #FFFFFF;
+            --aqua-border-active: #7C7EBB;
+            --violet-flash: #B1ECE8;
+            --aqua-surface: #B1ECE8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .master-wrapper {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .main-header {
+            padding: 10px 15px;
+            background: white;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .header-strip {
+            background-color: var(--p-color);
+            height: 45px;
+            border-radius: 10px;
+            margin: 5px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 15px;
+        }
+
+        #logo-preview {
+            max-width: 140px;
+            max-height: 55px;
+            object-fit: contain;
+            display: none;
+        }
+
+        .settings-gear {
+            cursor: pointer;
+            color: #ffffff;
+            font-size: 23px;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            padding: 10px;
+            gap: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 20px 10px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #e0e0e0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .tab-btn.active.cirel-tab {
+            background: var(--p-color);
+            color: white;
+        }
+
+        .tab-btn.active.flexo-tab {
+            background: var(--s-color);
+            color: white;
+        }
+
+        .shared-data {
+            padding: 15px;
+            border-bottom: 5px solid #f0f2f5;
+        }
+
+        .grid-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .grid-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .grid-row-3col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 10px; 
+            font-size: 16px;
+            text-align: right;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input:disabled {
+            background: #f5f5f5;
+            color: #999;
+            border: 1px dashed #ccc;
+            cursor: not-allowed;
+        }
+
+        @keyframes flash-violet {
+            0% { background-color: transparent; }
+            50% { background-color: var(--violet-flash); border-color: var(--s-color); }
+            100% { background-color: transparent; }
+        }
+
+        .flash-effect {
+            animation: flash-violet 0.4s ease-in-out 3;
+        }
+
+        .module {
+            display: none;
+            padding: 15px;
+        }
+
+        .module.active {
+            display: block;
+        }
+
+        .res-valor {
+            padding: 12px;
+            border-radius: 0px; 
+            font-weight: bold;
+            text-align: right;
+            font-size: 13px;
+            margin-bottom: 4px;
+            box-sizing: border-box;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .res-blue {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .res-green {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        .res-orange {
+            background-color: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffe0b2;
+        }
+
+        .res-aqua-superficie {
+            background-color: var(--aqua-surface) !important;
+            color: #333 !important;
+            border: 1px solid #95d3ce !important;
+        }
+
+        .res-alert-error {
+            background-color: #ffebee !important;
+            color: #c62828 !important;
+            border: 2px solid #ef5350 !important;
+        }
+
+        .res-alert-warning {
+            background-color: #fff3e0 !important;
+            color: #e65100 !important;
+            border: 2px solid #ffb74d !important;
+        }
+
+        .tech-icons-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            gap: 15px;
+            padding: 0 10px;
+        }
+
+        .app-icon {
+            flex: 0 0 65px;
+            height: 65px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+        }
+
+        .app-icon span {
+            font-size: 20px;
+            color: white;
+            margin-bottom: 2px;
+        }
+
+        .app-icon p {
+            font-size: 8px;
+            margin: 0;
+            font-weight: bold;
+            color: white;
+        }
+
+        .ic-opt { background: #4caf50; }
+        .ic-tall { background: #607d8b; }
+        .ic-vis { background: #2196f3; }
+
+        .mode-selector {
+            display: flex;
+            background: #eee;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            font-size: 9px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #ddd;
+            color: #777;
+        }
+
+        .mode-btn.active {
+            background: var(--p-color);
+            color: white;
+        }
+
+        .collapsible-content {
+            display: none;
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .tabla-opt {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .tabla-opt td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .mejor-fila {
+            background-color: #c8e6c9 !important;
+            font-weight: bold;
+            border: 2px solid #2e7d32;
+        }
+
+        #vis-container { padding: 35px 20px 20px 35px; display: flex; justify-content: center; background: #fafafa; border-radius: 10px; overflow: auto; }
+    #area-cirel, #area-cirel-clon { position: relative; border: 2px solid #333; background: #fff; box-shadow: 4px 4px 10px rgba(0,0,0,0.1); }
+    .etiqueta-v { position: absolute; background: rgba(13, 71, 161, 0.2); border: 1px solid rgba(13, 71, 161, 0.5); box-sizing: border-box; }
+    
+    /* --- NUEVO ESTILO: COTAS TÉCNICAS (AZUL FINO) --- */
+    
+    /* El cuadrito de la etiqueta */
+    .etiqueta-v {
+        position: absolute;
+        background: rgba(33, 150, 243, 0.15); /* Azul muy clarito transparente */
+        border: 1px solid #1976d2; /* Borde azul normal */
+        box-sizing: border-box; 
+    }
+
+    /* Contenedor general de cotas */
+    .cota {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none; /* Para que no estorben */
+        color: #0d47a1; /* Color del texto (Azul oscuro) */
+        font-weight: bold;
+        font-size: 10px;
+    }
+
+    /* Línea Horizontal (Ancho) */
+    .cota-h {
+        width: 100%;
+        height: 5px;   /* Altura de las "patitas" laterales */
+        top: -12px;    /* Subimos la línea para que no toque la caja */
+        left: 0;
+        
+        /* Dibujamos la línea fina azul */
+        border-top: 1px solid #2196f3; 
+        border-left: 1px solid #2196f3; 
+        border-right: 1px solid #2196f3;
+    }
+    
+    /* Posición del texto Horizontal */
+    .cota-h span, .ct-h {
+        position: absolute;
+        top: -8px; /* Subimos el texto encima de la línea */
+        background: #fafafa; /* Fondo para que se lea bien */
+        padding: 0 3px;
+    }
+
+    /* Línea Vertical (Alto) */
+    .cota-v {
+        height: 100%;
+        width: 5px;    /* Ancho de las "patitas" superior/inferior */
+        left: -12px;   /* Movemos la línea a la izquierda */
+        top: 0;
+        
+        /* Dibujamos la línea fina azul */
+        border-left: 1px solid #2196f3; 
+        border-top: 1px solid #2196f3; 
+        border-bottom: 1px solid #2196f3;
+    }
+
+    /* Posición del texto Vertical */
+    .cota-v span, .cota-text-v, .ct-v {
+        position: absolute;
+        left: -25px; 
+        transform: rotate(-90deg); /* Texto girado */
+        white-space: nowrap;
+        background: #fafafa;
+        padding: 0 3px;
+    }
+
+/* --- ANIMACIÓN FLASH (Para el enlace de datos) --- */
+    @keyframes flash-input {
+        0% { background-color: #fff; }
+        50% { background-color: #B1ECE8; border-color: #009688; box-shadow: 0 0 10px #B1ECE8; }
+        100% { background-color: #fff; }
+    }
+    .flash-effect {
+        animation: flash-input 1.5s ease-out;
+    }
+
+        .f-material-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .f-mat-card {
+            background: #f9f4ff;
+            border: 1px solid #e1bee7;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .f-mat-card.selected {
+            border: 2.5px solid var(--aqua-border-active) !important;
+            background: var(--aqua-bg) !important;
+            box-shadow: 0 4px 10px rgba(13,71,161,0.2);
+        }
+
+        .f-mat-card.selected span {
+            color: var(--aqua-text) !important;
+        }
+
+        .f-mat-card span {
+            font-size: 13px;
+            font-weight: bold;
+            color: #777;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .acabado-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .acabado-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            color: #777;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .acabado-btn.active {
+            background: var(--s-color);
+            color: white;
+            border-color: var(--s-color);
+            box-shadow: 0 4px 8px rgba(99, 78, 155, 0.3);
+        }
+
+        .total-box {
+            padding: 15px;
+            border-radius: 0px; 
+            text-align: right;
+            margin-top: 15px;
+            border: 1px solid #eee;
+        }
+
+        .total-val {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        #status-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 13px;
+    font-weight: bold;
+    z-index: 10000; /* Asegura que esté al frente */
+    display: none;
+}
+
+
+        #config-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .config-content {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 20px;
+            position: relative;
+        }
+        
+        #modal-empresa {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-empresa-content {
+            background: white;
+            width: 85%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .toolbar-empresa {
+            display: flex;
+            gap: 5px;
+            background: #f0f0f0;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .tool-btn {
+            border: 1px solid #ccc;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .conf-section-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--p-color);
+            margin: 15px 0 8px 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 3px;
+        }
+
+        .firma-box { display: none; }
+        .print-only-title { display: none; }
+        .pie-empresa-print { display: none; }
+
+        .btn-link-small {
+            width: 100%;
+            height: 45px;
+            border: none;
+            background: #e0e0e0;
+            color: #444;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .seccion-laminado {
+            background-color: #f2f2f2;
+            padding: 15px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-radius: 0px; 
+            border: 1px solid #ddd;
+        }
+
+/* --- MANEJO DE VISIBILIDAD E IMPRESIÓN (NUEVO) --- */
+#print-layout, #orden-trabajo-layout {
+    display: none;
+}
+
+@media print {
+    /* Forzar colores de fondo */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    /* Ocultar la aplicación al imprimir */
+    .master-wrapper, .no-print, #status-toast, #modal-empresa, #config-panel {
+        display: none !important;
+    }
+    
+    body { background: white; margin: 0; padding: 0; }
+
+    /* Lógica inteligente de impresión (Se controla por JS sin setTimeout) */
+    body.modo-orden #print-layout { display: none !important; }
+    body.modo-orden #orden-trabajo-layout { display: block !important; }
+
+    body.modo-proforma #orden-trabajo-layout { display: none !important; }
+    body.modo-proforma #print-layout { display: block !important; }
+}
+
+/* IMPORTANTE: Añadimos el ID del clon para que el esquema de la orden herede el diseño */
+#area-cirel, #area-cirel-clon { position: relative; border: 2px solid #333; background: #fff; box-shadow: 4px 4px 10px rgba(0,0,0,0.1); }
+
+    
+    /* Estilos de la Proforma Ejecutiva */
+    .header-print { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0d47a1; padding-bottom: 15px; margin-bottom: 25px; }
+    .logo-box img { max-width: 250px; max-height: 100px; object-fit: contain; }
+    .doc-info { text-align: right; color: #444; }
+    .doc-info h1 { margin: 0; color: #0d47a1; font-size: 24px; letter-spacing: 1px; }
+    
+    .client-section { display: flex; justify-content: space-between; margin-bottom: 30px; gap: 20px; }
+    .info-box { flex: 1; border: 1px solid #ddd; border-radius: 5px; overflow: hidden; }
+    .box-header { background: #f5f5f5; padding: 6px 12px; font-size: 11px; font-weight: bold; color: #333; border-bottom: 1px solid #ddd; text-transform: uppercase; }
+    .box-body { padding: 12px; font-size: 13px; line-height: 1.5; color: #333; }
+    
+    /* TABLA PROFORMA */
+    .pro-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+    .pro-table th { background-color: #0d47a1; color: white; padding: 10px; text-align: left; text-transform: uppercase; font-size: 11px; }
+    .pro-table td { border-bottom: 1px solid #eee; padding: 10px; vertical-align: middle; }
+    .col-center { text-align: center; padding-left: 55px !important; }
+    .col-right { text-align: right; padding-right: 15px !important; }
+    th.col-right { text-align: right; padding-right: 14px !important; }
+    .num-proforma { font-size: 18px; color: #c62828; font-weight: bold; margin-top: 5px; }
+
+    .totals-wrapper { display: flex; justify-content: flex-end; }
+    .totals-table { width: 45%; border-collapse: collapse; }
+    .totals-table td { padding: 6px 10px; text-align: right; font-size: 13px; }
+    .t-label { font-weight: bold; color: #666; }
+    .t-grand { border-top: 2px solid #0d47a1; font-size: 16px; font-weight: bold; color: #0d47a1; padding-top: 10px; }
+
+    .footer-section { margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .terms-box { width: 55%; font-size: 10px; color: #555; background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #eee; }
+    .sign-box { width: 35%; text-align: center; }
+    .sign-line { border-top: 1px solid #333; margin-bottom: 5px; width: 100%; }
+}
+
+
+    
+    /* 2. Mostrar y Configurar el Layout Profesional */
+    #print-layout { 
+        display: block !important; 
+        width: 100%; 
+        max-width: 100%; 
+        padding: 0 40px; 
+        box-sizing: border-box; 
+        font-family: 'Helvetica', Arial, sans-serif; 
+    }
+    
+    body { background: white; margin: 0; padding: 0; }
+    
+    /* Estilos de la Proforma Ejecutiva */
+    .header-print { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0d47a1; padding-bottom: 15px; margin-bottom: 25px; }
+    .logo-box img { max-width: 250px; max-height: 100px; object-fit: contain; }
+    .doc-info { text-align: right; color: #444; }
+    .doc-info h1 { margin: 0; color: #0d47a1; font-size: 24px; letter-spacing: 1px; }
+    
+    .client-section { display: flex; justify-content: space-between; margin-bottom: 30px; gap: 20px; }
+    .info-box { flex: 1; border: 1px solid #ddd; border-radius: 5px; overflow: hidden; }
+    .box-header { background: #f5f5f5; padding: 6px 12px; font-size: 11px; font-weight: bold; color: #333; border-bottom: 1px solid #ddd; text-transform: uppercase; }
+    .box-body { padding: 12px; font-size: 13px; line-height: 1.5; color: #333; }
+    
+      /* TABLA PROFORMA */
+    .pro-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+    
+    .pro-table th { 
+        background-color: #0d47a1; 
+        color: white; 
+        padding: 10px; 
+        text-align: left; 
+        text-transform: uppercase; 
+        font-size: 11px; 
+    }
+    
+    .pro-table td { 
+        border-bottom: 1px solid #eee; 
+        padding: 10px; 
+        vertical-align: middle; 
+    }
+
+    /* AJUSTE FINO: MOVER UN POCO A LA DERECHA */
+    .col-center { 
+        text-align: center; 
+        padding-left: 55px !important; /* Empuja la CANTIDAD a la derecha */
+    }
+    .col-right { 
+        text-align: right; 
+        padding-right: 15px !important; /* Separa un poco los PRECIOS del borde derecho */
+    }
+    th.col-right { 
+        text-align: right; 
+        /* Cambia este valor: */
+        /* 5px lo pega más al borde derecho */
+        /* 0px lo pega totalmente al borde */
+        padding-right: 14px !important; 
+    }
+    /* ESTILO PARA EL NÚMERO DE PROFORMA (ROJO) */
+    .num-proforma {
+        font-size: 18px;
+        color: #c62828; 
+        font-weight: bold;
+        margin-top: 5px;
+    }
+
+    .totals-wrapper { display: flex; justify-content: flex-end; }
+    .totals-table { width: 45%; border-collapse: collapse; }
+    .totals-table td { padding: 6px 10px; text-align: right; font-size: 13px; }
+    .t-label { font-weight: bold; color: #666; }
+    .t-grand { border-top: 2px solid #0d47a1; font-size: 16px; font-weight: bold; color: #0d47a1; padding-top: 10px; }
+
+    .footer-section { margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .terms-box { width: 55%; font-size: 10px; color: #555; background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #eee; }
+    .sign-box { width: 35%; text-align: center; }
+    .sign-line { border-top: 1px solid #333; margin-bottom: 5px; width: 100%; }
+}
+
+</style>
+</head>
+<body>
+<div id="splash-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d47a1; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 99999; transition: opacity 0.5s ease;">
+    <img src="logotipo-aplicación.png" style="width: 120px; height: 120px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin-bottom: 20px;">
+    <div style="color: white; font-weight: bold; font-size: 18px; letter-spacing: 2px;">MASTER FLEXO 6.0</div>
+    <div style="margin-top: 20px; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #ffffff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+</div>
+
+<style>
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+
+<div id="modal-empresa">
+    <div class="modal-empresa-content">
+        <label style="font-size: 14px; font-weight: bold; color: var(--p-color);">📝 DATOS BANCARIOS Y TÉRMINOS</label>
+        <p style="font-size: 11px; color: #666; margin-bottom: 5px;">Esta información aparecerá al pie de la proforma.</p>
+        
+        <div class="toolbar-empresa" style="border: 1px solid #ccc; border-bottom: none; border-radius: 5px 5px 0 0; background: #eee;">
+            <button class="tool-btn" onclick="formatearNegrita()"><b>B</b> (Negrita)</button>
+        </div>
+        <textarea id="txt_datos_empresa" rows="8" style="width:100%; padding:10px; border:1px solid #ccc; border-radius: 0 0 5px 5px; font-family: sans-serif; box-sizing: border-box;" placeholder="Ej: Banco Pichincha Cta..."></textarea>
+        
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <button class="btn-action" style="background:#555;" onclick="document.getElementById('modal-empresa').style.display='none'">CANCELAR</button>
+            <button class="btn-action" style="background:var(--p-color);" onclick="guardarDatosEmpresa()">GUARDAR</button>
+        </div>
+    </div>
+</div>
+
+<div id="status-toast"></div>
+<div class="master-wrapper">
+
+    <header class="main-header"><div class="logo-container"><img id="logo-preview" src=""></div></header>
+    
+    <div class="header-strip no-print">
+        <div style="display:flex; gap:20px; align-items:center;">
+            <span class="settings-gear" onclick="guardarEnHistorial()" title="Guardar">💾</span>
+            <span class="settings-gear" onclick="abrirHistorial()" title="Historial">📋</span>
+            <span class="settings-gear" onclick="toggleConfig(true)">⚙</span>
+        </div>
+    </div>
+
+    <section class="shared-data">
+        <div class="grid-inputs">
+            <div><label>CLIENTE</label><input type="text" id="c_nom" placeholder="Nombre del Cliente..."></div>
+            <div class="grid-row">
+                <div><label>RUC/CI</label><input type="text" id="c_ruc" placeholder="0000000000"></div>
+                <div><label>FECHA</label><input type="text" id="fecha" readonly></div>
+            </div>
+        </div>
+    </section>
+
+    <nav class="nav-tabs no-print">
+        <button id="btn-cirel" class="tab-btn active cirel-tab" onclick="switchApp('mod_cirel')">CIREL PRO</button>
+        <button id="btn-flexo" class="tab-btn flexo-tab" onclick="switchApp('mod_flexo')">FLEXO PRO</button>
+    </nav>
+
+    <main id="mod_cirel" class="module active">
+        <div class="grid-inputs">
+            <div class="grid-row-3col">
+                <div><label>Ancho mm</label><input type="number" id="cw" value="50" oninput="runCirel()"></div>
+                <div><label>Alto mm</label><input type="number" id="ch" value="30" oninput="runCirel()"></div>
+                <div style="display:flex; align-items:flex-end;"><button onclick="girarMedidas()" style="width:100%; height:45px; border-radius:10px; border:1px solid #ccc; background:white; font-size:18px;">⇄</button></div>
+            </div>
+            <div class="grid-row-3col">
+                <div><label>Gap H</label><input type="number" id="cgh" value="3" oninput="runCirel()"></div>
+                <div><label>Gap V</label><input type="number" id="cgv" value="3" oninput="runCirel()"></div>
+                <div></div>
+            </div>
+            <div class="grid-row-3col">
+                <div><label>Columnas</label><input type="number" id="ccol" value="2" oninput="recalcCirelByGrid('total')"></div>
+                <div><label>Filas</label><input type="number" id="cfilas" value="5" oninput="recalcCirelByGrid('total')"></div>
+                <div><label>Total Etiq</label><input type="number" id="ctot" value="10" oninput="recalcCirelByGrid('filas')"></div>
+            </div>
+        </div>
+
+        <div class="mode-selector no-print" style="margin:10px 0; display:flex; gap:5px; background:#eee; padding:5px; border-radius:8px;">
+            <button id="mode-guias" class="mode-btn active" onclick="setMasterMode('guias')">CON GUÍAS</button>
+            <button id="mode-neto" class="mode-btn" onclick="setMasterMode('neto')">BLOQUE NETO</button>
+        </div>
+
+        <div class="grid-row">
+            <div><label>Bloque Neto</label><div id="cr_bloque" class="res-valor res-blue">0x0</div></div>
+            <div><label id="lbl_aux">Imp+Guías</label><div id="cr_aux" class="res-valor res-blue">0x0</div></div>
+        </div>
+        <div><label>Área Cobro Final</label><div id="cr_cobro" class="res-valor res-orange">0x0</div></div>
+
+        <div class="tech-icons-row no-print">
+            <button class="app-icon ic-opt" onclick="toggleSec('sec_opt')"><span>📊</span><p>OPTIMIZAR</p></button>
+            <button class="app-icon ic-tall" onclick="toggleSec('sec_z')"><span>⚙️</span><p>TALLER Z</p></button>
+            <button class="app-icon ic-vis" onclick="toggleSec('sec_vis')"><span>👁️</span><p>ESQUEMA</p></button>
+        </div>
+
+        <div id="sec_opt" class="collapsible-content no-print"><div id="cr_tabla_opt"></div></div>
+        
+        <div id="sec_z" class="collapsible-content no-print">
+            <div class="grid-row-3col">
+                <div><label>Z Cilindro</label><input type="number" id="z_manual" style="background:#333; color:white; text-align:center;" oninput="calcZManual()"></div>
+                <div><label>Teórico</label><div id="cr_teo" class="res-valor" style="background:#eee;">0 mm</div></div>
+                <div><label>&nbsp;</label><button onclick="puenteZAFlexo()" class="btn-link-small" title="Transferir a Flexo">🔗</button></div>
+            </div>
+            <div id="stock_display" style="font-size: 10px; color: #666; font-weight: bold; margin-top: 6px;">Stock: 0</div>
+            <div style="margin-top:10px;"><label>Compensada (-1.7%)</label><div id="cr_comp" class="res-valor res-blue">0 mm</div></div>
+        </div>
+
+        <div id="sec_vis" class="collapsible-content">
+            <div id="vis-container"><div id="area-cirel"><div id="vis"></div></div></div>
+        </div>
+
+        <div class="grid-row" style="margin-top:10px;">
+            <div><label>Cant. Cireles</label><input type="number" id="cn_cir" value="1" oninput="runCirel()"></div>
+            <div><label>Área Tot cm²</label><div id="cr_area" class="res-valor res-blue">0 cm²</div></div>
+        </div>
+
+        <div class="total-box">
+            <div style="font-size:12px;">SUBTOTAL: <span id="cr_sub">$ 0.00</span></div>
+            <div style="font-size:12px;">IVA: <span id="cr_iva">$ 0.00</span></div>
+            <div class="total-val" style="color:var(--p-color);" id="cr_total">$ 0.00</div>
+        </div>
+
+        <div class="no-print">
+            <button class="btn-action" style="background:var(--ws-color);" onclick="wsAction('cirel', 'cliente')">💬 WhatsApp Cliente</button>
+            <button class="btn-action" style="background:var(--p-color);" onclick="ejecutarImpresionMasterflexo('cirel')">🖨️ Imprimir Cirel</button>
+        </div>
+    </main>
+
+    <main id="mod_flexo" class="module">
+        <div class="grid-row">
+            <div><label>Bloque cm</label><input type="number" id="f_cmB" value="22.25" oninput="runFlexo()"></div>
+            <div><label>Etiq x Bloque</label><input type="number" id="f_etB" value="6" oninput="runFlexo()"></div>
+        </div>
+        <div class="grid-row">
+            <div><label>Total Pedido</label><input type="number" id="f_tot" value="5000" oninput="runFlexo()"></div>
+            <div><label>Ancho Mat cm</label><input type="number" id="f_anc" value="10" oninput="runFlexo()"></div>
+        </div>
+
+                <div class="grid-inputs" style="margin-top:15px;">
+            <div class="grid-row">
+                <div>
+                    <label>BLOQUES</label>
+                    <div id="f_res_bloques" class="res-valor res-blue">0.00</div>
+                </div>
+                <div>
+                    <label>LINEAL (CM)</label>
+                    <div id="f_res_lineal_cm" class="res-valor res-blue">0.00 cm</div>
+                </div>
+            </div>
+
+            <div class="grid-row">
+                <div>
+                    <label>METROS (M)</label>
+                    <div id="f_res_m" class="res-valor res-green">0.00 m</div>
+                </div>
+                <div>
+                    <label>PIES (FT)</label>
+                    <div id="f_res_pies" class="res-valor res-green">0.00 ft</div>
+                </div>
+            </div>
+
+            <div>
+                <label>SUPERFICIE TOTAL (CM²)</label>
+                <div id="f_res_cm2" class="res-valor res-aqua-superficie">0 cm²</div>
+            </div>
+        </div>
+
+
+        <div class="f-material-grid">
+            <div class="f-mat-card selected" id="card_v1" onclick="selMat('v1')"><span>PoliPro Blanco</span></div>
+            <div class="f-mat-card" id="card_v2" onclick="selMat('v2')"><span>PoliPro Trans</span></div>
+            <div class="f-mat-card" id="card_v3" onclick="selMat('v3')"><span>PoliPro Metal</span></div>
+            <div class="f-mat-card" id="card_v4" onclick="selMat('v4')"><span>Propal Blanco</span></div>
+            <div class="f-mat-card" id="card_v5" onclick="selMat('v5')"><span>Propal Metal</span></div>
+            <div class="f-mat-card" id="card_vM" onclick="selMat('vM')"><span>Manual</span></div>
+        </div>
+        
+        <div class="seccion-laminado no-print">
+            <label style="color:var(--s-color); font-size:11px; font-weight:bold;">ACABADO</label>
+            <div class="acabado-container">
+                <button id="btn_lam_mate" class="acabado-btn" onclick="toggleLaminado('mate')">MATE</button>
+                <button id="btn_lam_brill" class="acabado-btn" onclick="toggleLaminado('brillante')">BRILLANTE</button>
+            </div>
+        </div>
+
+        <div class="grid-row no-print" style="margin-top:15px;">
+            <div>
+                <label>Desc. (%)</label>
+                <input type="number" id="f_desc_extra" value="0" oninput="runFlexo()" style="background:#fff9c4; border-color:#fbc02d;">
+                <div id="val_desc_dolar" style="text-align:right; font-size:11px; color:#c62828; font-weight:bold; margin-top:2px;">$0.00</div>
+            </div>
+            <div>
+                <label>Extra ($)</label>
+                <input type="number" id="f_extra" value="0" oninput="runFlexo()">
+            </div>
+        </div>
+
+        <button id="btn_vincular_presupuesto" onclick="toggleVincularCirel()" class="btn-action" style="background:white; color:#0d47a1; border:1px solid #0d47a1;">🔗 SUMAR CIREL</button>
+
+        <div class="total-box">
+            <div id="f_msg" style="font-size:11px; font-weight:bold; margin-bottom:5px; text-align:center;"></div>
+            <div style="font-size:14px; color:#444;">Unit. (c/IVA): <span id="f_unit_con" style="font-weight:bold; color:#0d47a1;">$ 0.0000</span></div>
+            <div style="font-size:16px;">SUBTOTAL: <span id="f_sub">$ 0.00</span></div>
+            <div style="font-size:16px;">IVA: <span id="f_iva">$ 0.00</span></div>
+            
+            <div id="f_separador_cirel" style="display:none; border-top: 1px dashed #ccc; margin:5px 0; padding-top:5px;">
+                + Cirel: <span id="f_res_solo_cirel">$ 0.00</span>
+            </div>
+            
+            <div class="total-val" style="color:#1b5e20;" id="f_total">$ 0.00</div>
+        </div>
+
+        <div class="no-print">
+            <button class="btn-action" style="background:#4caf50; color:white; margin-bottom: 8px;" onclick="generarPDFOrdenTrabajo()">📄 PDF Orden de Taller</button>
+            <button class="btn-action" style="background:var(--aqua-bg); color:white; margin-bottom: 8px;" onclick="agregarAlCarrito()">🛒 Añadir Tamaño a Pedido</button>
+            <button class="btn-action" style="background:var(--aqua-bg);" onclick="wsAction('flexo', 'cliente')">💬 WhatsApp Cliente</button>
+            <button class="btn-action" style="background:var(--ws-prod);" onclick="wsAction('produccion')">🏭 WhatsApp Producción</button>
+            <button class="btn-action" style="background:var(--s-color);" onclick="ejecutarImpresionMasterflexo('flexo')">🖨️ Imprimir Flexo</button>
+        </div>
+
+
+    </main>
+
+
+    <div id="sec_historial" class="collapsible-content no-print" style="max-width:90%; margin:10px auto;">
+        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ddd; padding-bottom:5px;">
+            <strong>Historial</strong>
+            <button onclick="borrarHistorial()" style="color:red; background:none; border:none; cursor:pointer;">Borrar</button>
+        </div>
+        <div id="lista_historial" style="max-height:200px; overflow-y:auto; font-size:12px;"></div>
+    </div>
+    
+        <div id="config-panel" class="no-print">
+        <div class="config-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--p-color);">Ajustes del Sistema</h3>
+                <button onclick="toggleConfig(false)" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            
+            <div style="overflow-y:auto; max-height:75vh; padding-right:5px;">
+                <button onclick="abrirModalEmpresa()" class="btn-action" style="background:white; color:#0d47a1; border:1px solid #0d47a1; margin-bottom:15px;">📝 EDITAR DATOS / PIE DE PÁGINA</button>
+                
+                <div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-bottom:10px;">
+                    <label>Logo de la Empresa</label>
+                    <input type="file" onchange="subirLogo(this)" style="margin-top:5px;">
+                </div>
+
+                <button onclick="checkPass()" class="btn-action" style="background:#444; margin-bottom:15px;">🔓 DESBLOQUEAR EDICIÓN</button>
+                <div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-bottom:10px;">
+    <div class="conf-section-title">DATOS FIRMA AUTORIZADA</div>
+    <div class="grid-row">
+        <div><label>Nombre Resp.</label><input type="text" id="conf_firma_nom" placeholder="Ej: Ing. Juan Pérez"></div>
+        <div><label>Cargo</label><input type="text" id="conf_firma_cargo" placeholder="Ej: Gerente Producción"></div>
+    </div>
+</div>
+
+                <div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-bottom:10px;">
+                    <div class="conf-section-title">PRECIOS BASE & IVA</div>
+                    <div class="grid-row">
+                        <div><label>IVA (%)</label><input type="number" id="conf_iva" disabled></div>
+                        <div><label>Cirel ($/cm²)</label><input type="number" id="conf_cirel" disabled></div>
+                    </div>
+                </div>
+
+                <div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-bottom:10px;">
+                    <div class="conf-section-title">MATERIALES ($ x cm²)</div>
+                    <div class="grid-row"><div><label>PP Blanco</label><input id="conf_v1" disabled></div><div><label>PP Trans</label><input id="conf_v2" disabled></div></div>
+                    <div class="grid-row"><div><label>PP Metal</label><input type="number" id="conf_v3" disabled></div><div><label>Propal</label><input type="number" id="conf_v4" disabled></div></div>
+                    <div class="grid-row"><div><label>Prop Metal</label><input type="number" id="conf_v5" disabled></div><div><label>Manual</label><input type="number" id="conf_vM" disabled></div></div>
+                    
+                    <div style="margin-top:8px; border-top:1px dashed #ccc; padding-top:5px;">
+                        <label>Laminado ($ x cm²)</label>
+                        <div class="grid-row">
+                            <div><label>Mate</label><input type="number" id="conf_lMate" disabled step="0.00000001"></div>
+                            <div><label>Brillante</label><input type="number" id="conf_lBrill" disabled step="0.00000001"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-bottom:10px;">
+                    <div class="conf-section-title">ESCALAS (CANTIDAD VS PRECIO)</div>
+                    <div class="grid-row"><div><label>Hasta (Cant)</label><input type="number" id="conf_q1" disabled></div><div><label>(+) Recargo %</label><input type="number" id="conf_f1" disabled></div></div>
+                    <div class="grid-row"><div><label>Hasta (Cant)</label><input type="number" id="conf_q2" disabled></div><div><label>(+) Recargo %</label><input type="number" id="conf_f2" disabled></div></div>
+                    <div class="grid-row" style="border-bottom:1px dashed #ccc; padding-bottom:5px;"><div><label>Hasta (Cant)</label><input type="number" id="conf_q3" disabled></div><div><label>Estándar %</label><input type="number" id="conf_f3" disabled></div></div>
+                    <div class="grid-row"><div><label>Hasta (Cant)</label><input type="number" id="conf_q4" disabled></div><div><label>(-) Desc %</label><input type="number" id="conf_f4" disabled></div></div>
+                    <div class="grid-row"><div><label>Hasta (Cant)</label><input type="number" id="conf_q5" disabled></div><div><label>(-) Desc %</label><input type="number" id="conf_f5" disabled></div></div>
+                    <div class="grid-row"><div><label>Desde...</label><input type="number" id="conf_q6" disabled></div><div><label>(-) Desc %</label><input type="number" id="conf_f6" disabled></div></div>
+                </div>
+
+                <div style="background:#e3f2fd; padding:10px; border-radius:10px; border:1px solid #2196f3;">
+                    <label style="color:#0d47a1; font-weight:bold;">GESTIÓN AVANZADA</label>
+                    <button onclick="abrirGestorZ()" class="btn-action" style="background:#607d8b; margin-top:5px;">⚙️ Ajustar Stock Z</button>
+                    <button onclick="generarReporteZ()" class="btn-action" style="background:#607d8b;">📄 PDF Inventario</button>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                        <button onclick="exportarConfiguracion()" style="padding:10px; background:#7b1fa2; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">💾 Backup</button>
+                        <button onclick="document.getElementById('import_file').click()" style="padding:10px; background:#2e7d32; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📂 Restaurar</button>
+                    </div>
+                    <input type="file" id="import_file" style="display:none" accept=".json" onchange="importarConfiguracion(this)">
+                    
+                    <button onclick="resetFabrica()" class="btn-action" style="background:#c62828; margin-top:15px;">⚠️ RESTAURAR DE FÁBRICA</button>
+                </div>
+
+                <button class="btn-action" style="background:var(--p-color); margin-top:20px; height:50px; font-size:16px;" onclick="saveAll()">GUARDAR CAMBIOS</button>
+            </div>
+        </div>
+    </div>    
+</div>
+
+<div id="print-layout" style="display:none;">
+    <div class="header-print">
+        <div class="logo-box"><img id="print_logo_img" src=""></div>
+        <div class="doc-info">
+            <h1>PROFORMA</h1>
+            <div id="p_num_secuencia" class="num-proforma">N° 0000</div>
+            <p>Fecha: <span id="p_fecha"></span></p>
+        </div>
+    </div>
+
+    <div class="client-section">
+        <div class="info-box">
+            <div class="box-header">Cliente</div>
+            <div class="box-body">
+                <strong id="p_cliente"></strong><br>
+                <span id="p_ruc"></span>
+            </div>
+        </div>
+    </div>
+
+    <table class="pro-table">
+        <thead>
+            <tr>
+                <th style="width:50%">Descripción</th>
+                <th class="col-center" style="width:15%">Cant.</th>
+                <th class="col-right" style="width:15%">Unitario</th>
+                <th class="col-right" style="width:20%">Total</th>
+            </tr>
+        </thead>
+        <tbody id="p_tabla_cuerpo"></tbody>
+    </table>
+
+    <div class="totals-wrapper">
+        <table class="totals-table">
+            <tr><td class="t-label">Subtotal:</td><td id="p_subtotal"></td></tr>
+            <tr><td class="t-label">IVA (15%):</td><td id="p_iva"></td></tr>
+            <tr><td class="t-grand">TOTAL A CANCELAR:</td><td class="t-grand" id="p_total_final"></td></tr>
+        </table>
+    </div>
+
+    <div class="footer-section">
+        <div class="terms-box">
+            <strong>DATOS / TÉRMINOS:</strong><br>
+            <span id="p_footer_text" style="white-space: pre-wrap;"></span>
+        </div>
+        <div class="sign-box">
+            <div style="height:40px;"></div>
+            <div class="sign-line"></div>
+            <span style="font-weight:bold; font-size:12px; display:block;" id="p_firma_nom"></span>
+            <span style="font-size:10px; color:#666;" id="p_firma_cargo"></span>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const PASO = 3.175;
+    const CONFIG_IDS = ['iva', 'cirel', 'v1', 'v2', 'v3', 'v4', 'v5', 'vM', 'q1', 'f1', 'q2', 'f2', 'q3', 'f3', 'q4', 'f4', 'q5', 'f5', 'q6', 'f6', 'lMate', 'lBrill', 'firma_nom', 'firma_cargo'];
+    const CONFIG_DEFAULTS = [15, 0.06, 0.00023345, 0.000250125, 0.00030682, 0.000210105, 0.00029010, 0.000439, 4999, 12, 9999, 7, 24999, 0, 49999, 10, 99999, 15, 100000, 20, 0.00003588, 0.000028405, "", ""];
+    
+    let masterMode = 'guias';
+    let currentMat = 'v1';
+    let currentLam = 'brillante'; 
+    let vincularCirel = false;
+
+    const INVENTARIO_DEFAULT = {
+        "30": 3, "31": 4, "32": 2, "33": 4, "34": 3, "35": 5, "36": 3, "37": 0, "38": 2, "39": 0,
+        "40": 8, "41": 8, "42": 5, "43": 0, "44": 3, "45": 8, "46": 4, "47": 6, "48": 8, "49": 7,
+        "50": 4, "51": 3, "52": 3, "53": 4, "54": 3, "55": 6, "56": 4, "57": 6, "58": 4, "59": 4,
+        "60": 7, "61": 3, "62": 9, "63": 6, "64": 3, "65": 3, "66": 3, "68": 4,
+        "70": 4, "71": 0, "72": 6, "73": 0, "74": 5, "75": 6, "76": 4, "78": 5,
+        "81": 4, "83": 3, "86": 4, "88": 4, "90": 3, "93": 3
+    };
+
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxToVS2ctOsuJQY4-lZ1pTrf99Wq1pujS-T9La4V5aiIY7UhjOjCyD_DWWwhFfZ6SXpVw/exec";
+
+    window.onload = () => {
+        // 1. Carga de datos inicial
+        try {
+            const fechaInput = document.getElementById('fecha');
+            if(fechaInput) fechaInput.value = new Date().toLocaleDateString();
+            
+            loadAll();
+            updateLamButtons();
+            
+            // Cálculos iniciales
+            setTimeout(() => { 
+                if(typeof runCirel === 'function') runCirel(); 
+                if(typeof runFlexo === 'function') runFlexo(); 
+            }, 100);
+            
+            switchApp('mod_cirel');
+        } catch (e) {
+            console.error("Error en carga:", e);
+        }
+
+        // 2. Lógica del Splash Screen
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+            setTimeout(() => {
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 500);
+            }, 2000); 
+        }
+
+        // 3. Registro PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('PWA Lista'))
+                .catch(err => console.log('Error PWA', err));
+        }
+    };
+
+    function loadAll() {
+        CONFIG_IDS.forEach((id, i) => {
+            let v = localStorage.getItem('mf_' + id);
+            // Si es nulo, usar default
+            if(v === null) { v = CONFIG_DEFAULTS[i]; localStorage.setItem('mf_' + id, v); }
+            const el = document.getElementById('conf_' + id);
+            if(el) el.value = v;
+        });
+        const l = localStorage.getItem('mf_logo');
+        if(l) { document.getElementById('logo-preview').src = l; document.getElementById('logo-preview').style.display = 'block'; }
+        document.getElementById('txt_datos_empresa').value = localStorage.getItem('mf_datos_empresa') || "";
+        if(!localStorage.getItem('mf_inventario_z')) localStorage.setItem('mf_inventario_z', JSON.stringify(INVENTARIO_DEFAULT));
+    }
+
+    // --- INTERFAZ ---
+    function switchApp(id) {
+        document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'mod_cirel') document.querySelector('.cirel-tab').classList.add('active');
+        else document.querySelector('.flexo-tab').classList.add('active');
+        if(id === 'mod_cirel' && document.getElementById('sec_vis').style.display === 'block') setTimeout(runCirel, 50);
+    }
+
+    function toggleSec(id) {
+        const el = document.getElementById(id);
+        const isHidden = getComputedStyle(el).display === 'none';
+        el.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) {
+            if(id === 'sec_vis') setTimeout(runCirel, 50);
+            if(id === 'sec_opt') generarTablaOpt();
+            if(id === 'sec_z') calcZManual();
+            if(id === 'sec_historial') setTimeout(() => el.scrollIntoView({behavior:"smooth"}), 100);
+        }
+    }
+
+    // --- CORE DE NEGOCIO ---
+        function runCirel() {
+        const w = parseFloat(document.getElementById('cw').value)||0;
+        const h = parseFloat(document.getElementById('ch').value)||0;
+        const col = parseFloat(document.getElementById('ccol').value)||1;
+        const filas = parseFloat(document.getElementById('cfilas').value)||1;
+        const ncir = parseFloat(document.getElementById('cn_cir').value)||1;
+        const gh = parseFloat(document.getElementById('cgh').value)||0;
+        const gv = parseFloat(document.getElementById('cgv').value)||0;
+        
+        // Cálculos de bloque
+        const bW = (w*col) + ((col-1)*gh);
+        const bH = (h*filas) + ((filas-1)*gv);
+        let mW = masterMode === 'guias' ? bW + 9 : bW;
+        let mH = masterMode === 'guias' ? bH + 9 : bH + 3;
+
+        let cW = (mW/10) + 2; let cH = (mH/10) + 2;
+        let areaCobro = (cW * cH) * ncir;
+
+        // Mostrar resultados numéricos
+        document.getElementById('cr_bloque').innerText = bW.toFixed(1)+"x"+bH.toFixed(1) + " mm";
+        document.getElementById('cr_aux').innerText = mW.toFixed(1)+"x"+mH.toFixed(1) + " mm";
+        document.getElementById('lbl_aux').innerText = masterMode === 'guias' ? "Imp+Guías" : "Medida Final";
+        if(document.getElementById('cr_cobro')) document.getElementById('cr_cobro').innerText = cW.toFixed(1) + "x" + cH.toFixed(1) + " cm (" + areaCobro.toFixed(2) + " cm²)";
+        document.getElementById('cr_area').innerText = areaCobro.toFixed(2) + " cm²";
+
+        // Precios
+        let costoBase = parseFloat(localStorage.getItem('mf_cirel'))||0.06;
+        let sub = areaCobro * costoBase;
+        let iva = sub * ((parseFloat(localStorage.getItem('mf_iva'))||15)/100);
+        document.getElementById('cr_sub').innerText = "$ "+sub.toFixed(2);
+        document.getElementById('cr_iva').innerText = "$ "+iva.toFixed(2);
+        document.getElementById('cr_total').innerText = "$ "+(sub+iva).toFixed(2);
+        
+        autoCalcZ(mH);
+        calcZManual();
+
+        // --- CORRECCIÓN ESQUEMA (DIBUJO EXACTO) ---
+        if(document.getElementById('sec_vis').style.display === 'block') {
+            const vis = document.getElementById('vis'); 
+            const areaE = document.getElementById('area-cirel');
+            vis.innerHTML = '';
+            
+            // Usamos el Total Real escrito en el input, o el cálculo si está vacío
+            const totalReal = parseFloat(document.getElementById('ctot').value) || (col*filas);
+
+            const scale = 1.3; 
+            areaE.style.width = (mW*scale)+"px"; 
+            areaE.style.height = (mH*scale)+"px";
+            
+            // Cotas
+            vis.innerHTML += `<div class="cota cota-h"><span class="cota-text ct-h">${(mW/10).toFixed(2)} cm</span></div>`;
+            vis.innerHTML += `<div class="cota cota-v"><span class="cota-text ct-v">${(mH/10).toFixed(2)} cm</span></div>`;
+            
+            const oX = (masterMode==='guias'?4.5:0)*scale; 
+            const oY = (masterMode==='guias'?4.5:0)*scale;
+            
+            // EL BUCLE AHORA TERMINA EN 'totalReal' (Ej: 9)
+            for(let i=0; i < totalReal; i++){
+                const r = Math.floor(i/col); 
+                const c = i%col;
+                let d = document.createElement('div'); 
+                d.className = 'etiqueta-v';
+                d.style.width = (w*scale)+"px"; 
+                d.style.height = (h*scale)+"px";
+                d.style.left = (oX+(c*(w+gh)*scale))+"px"; 
+                d.style.top = (oY+(r*(h+gv)*scale))+"px";
+                vis.appendChild(d);
+            }
+        }
+    }
+
+
+    // --- CORRECCIÓN PUNTO 2: ENLACE Z CON ANIMACIÓN COMPLETA ---
+ function puenteZAFlexo() {
+    // 1. Obtener valores de texto
+    const txtTeo = document.getElementById('cr_teo').innerText;
+    const txtAux = document.getElementById('cr_aux').innerText;
+
+    // 2. Convertir a números para validar (ignora el texto "mm")
+    const valorZ = parseFloat(txtTeo) || 0;
+    
+    // 3. Validación: Solo falla si Z es realmente 0
+    if(valorZ === 0) {
+        alert("⚠️ Error: Primero debes calcular las medidas en la pestaña CIREL.");
+        return;
+    }
+
+    // 4. Referencias a los inputs de destino
+    const inputBloque = document.getElementById('f_cmB');
+    const inputAncho = document.getElementById('f_anc');
+    const inputEtiq = document.getElementById('f_etB');
+    const totalEtiqCirel = document.getElementById('ctot').value; 
+
+    // 5. Cálculos y Transferencia
+    // Z (mm) a Bloque (cm)
+    inputBloque.value = (valorZ / 10).toFixed(2);
+    
+    // Ancho (mm) a Ancho Material (cm) + 0.5cm de margen
+    const anchoAuxStr = txtAux.split('x')[0];
+    const anchoVal = parseFloat(anchoAuxStr) || 0;
+    inputAncho.value = ((anchoVal / 10) + 0.8).toFixed(2);
+    
+    // Cantidad de etiquetas por bajada
+    inputEtiq.value = totalEtiqCirel;
+
+    // 6. Cambiar de pestaña
+    switchApp('mod_flexo');
+    
+    // 7. SCROLL AUTOMÁTICO (Restaurado)
+    // Esperamos 100ms para que la pestaña termine de abrirse bien antes de scrollear
+    setTimeout(() => {
+        inputBloque.scrollIntoView({behavior: "smooth", block: "center"});
+    }, 100);
+
+    // 8. ANIMACIÓN FLASH (Restaurada)
+    setTimeout(() => {
+        inputBloque.classList.add('flash-effect');
+        inputAncho.classList.add('flash-effect');
+        inputEtiq.classList.add('flash-effect');
+        
+        // Quitar la clase después de 1.5s para poder animar de nuevo en el futuro
+        setTimeout(() => { 
+            inputBloque.classList.remove('flash-effect'); 
+            inputAncho.classList.remove('flash-effect'); 
+            inputEtiq.classList.remove('flash-effect'); 
+        }, 1500);
+    }, 300);
+    
+    // 9. Recalcular Flexo con los nuevos datos
+    runFlexo();
+}
+
+
+
+                function runFlexo() {
+        // 1. Obtener datos
+        const cmB = parseFloat(document.getElementById('f_cmB').value)||0;
+        const totE = parseFloat(document.getElementById('f_tot').value)||0;
+        const anc = parseFloat(document.getElementById('f_anc').value)||0;
+        const etB = parseFloat(document.getElementById('f_etB').value)||1;
+        const extra = parseFloat(document.getElementById('f_extra').value)||0;
+        const descP = parseFloat(document.getElementById('f_desc_extra').value)||0;
+        
+        // 2. Cálculos de Producción
+        const bloques = totE / etB;
+        const linCm = bloques * cmB;
+        const metros = linCm / 100;
+        const pies = metros * 3.28084;
+        const supCm2 = linCm * anc;
+
+        if(document.getElementById('f_res_bloques')) {
+            document.getElementById('f_res_bloques').innerText = bloques.toFixed(2);
+            document.getElementById('f_res_lineal_cm').innerText = linCm.toFixed(1) + " cm";
+            document.getElementById('f_res_m').innerText = metros.toFixed(2) + " m";
+            document.getElementById('f_res_pies').innerText = pies.toFixed(2) + " ft";
+        }
+        document.getElementById('f_res_cm2').innerText = supCm2.toFixed(0)+" cm²";
+
+        // 3. Costos y Lógica de Escalas (DINÁMICA)
+        const ivaP = parseFloat(localStorage.getItem('mf_iva'))||15;
+        const cB = parseFloat(localStorage.getItem('mf_'+currentMat))||0;
+        let pLam = 0; 
+        if(currentLam==='mate') pLam=parseFloat(localStorage.getItem('mf_lMate'))||0; 
+        if(currentLam==='brillante') pLam=parseFloat(localStorage.getItem('mf_lBrill'))||0;
+
+        let factor = 1.0; 
+        let labelEscala = "Estándar"; // Por defecto
+        
+        // Cargamos porcentajes
+        const q1=parseFloat(localStorage.getItem('mf_q1'))||0; const f1=parseFloat(localStorage.getItem('mf_f1'))||0;
+        const q2=parseFloat(localStorage.getItem('mf_q2'))||0; const f2=parseFloat(localStorage.getItem('mf_f2'))||0;
+        const q3=parseFloat(localStorage.getItem('mf_q3'))||0; const f3=parseFloat(localStorage.getItem('mf_f3'))||0;
+        const q4=parseFloat(localStorage.getItem('mf_q4'))||0; const f4=parseFloat(localStorage.getItem('mf_f4'))||0;
+        const q5=parseFloat(localStorage.getItem('mf_q5'))||0; const f5=parseFloat(localStorage.getItem('mf_f5'))||0;
+        const q6=parseFloat(localStorage.getItem('mf_q6'))||0; const f6=parseFloat(localStorage.getItem('mf_f6'))||0;
+
+        // Evaluamos y asignamos NOMBRE EXACTO (Ej: "Recargo 7%")
+        if (totE <= q1) { factor = 1 + (f1/100); labelEscala=`Recargo ${f1}%`; }
+        else if (totE <= q2) { factor = 1 + (f2/100); labelEscala=`Recargo ${f2}%`; }
+        else if (totE <= q3) { factor = 1 + (f3/100); labelEscala="Precio Estándar"; }
+        else if (totE <= q4) { factor = 1 - (f4/100); labelEscala=`Descuento ${f4}%`; }
+        else if (totE <= q5) { factor = 1 - (f5/100); labelEscala=`Descuento ${f5}%`; }
+        else { factor = 1 - (f6/100); labelEscala=`Descuento ${f6}%`; } // Mayor a Q5
+
+        const base = (supCm2 * cB * factor); 
+        const dif = base - (supCm2 * cB); 
+        let sub = base + (supCm2*pLam) + extra;
+        
+        let valDesc = 0;
+        if(descP > 0) { valDesc = sub * (descP / 100); sub = sub - valDesc; }
+        document.getElementById('val_desc_dolar').innerText = descP > 0 ? "-$ " + valDesc.toFixed(2) : "$ 0.00";
+
+        let iva = sub*(ivaP/100); 
+        let total = sub+iva; 
+        let totalFinalOrden = total;
+
+        const divSep = document.getElementById('f_separador_cirel');
+        if(vincularCirel) {
+            const valCirel = parseFloat(document.getElementById('cr_total').innerText.replace('$ ',''))||0;
+            totalFinalOrden += valCirel;
+            document.getElementById('f_res_solo_cirel').innerText = "$ "+valCirel.toFixed(2);
+            divSep.style.display = 'block';
+        } else { divSep.style.display = 'none'; }
+
+        document.getElementById('f_unit_con').innerText = "$ "+(totE>0?total/totE:0).toFixed(4);
+        document.getElementById('f_sub').innerText = "$ "+sub.toFixed(2);
+        document.getElementById('f_iva').innerText = "$ "+iva.toFixed(2);
+        document.getElementById('f_total').innerText = "$ "+totalFinalOrden.toFixed(2);
+        
+        // MENSAJE FINAL: Etiqueta + Valor en Dólares
+        // Ejemplo visual: Recargo 7% (+$4.50)
+        const msg = document.getElementById('f_msg');
+        msg.innerText = `${labelEscala} (${dif>0?'+':''}$${dif.toFixed(2)})`;
+        msg.style.color = factor > 1 ? '#e65100' : (factor < 1 ? '#1b5e20' : '#444');
+        msg.style.background = factor > 1 ? '#fff3e0' : (factor < 1 ? '#e8f5e9' : '#eee');
+    }
+
+        
+
+
+    // --- CORRECCIÓN PUNTO 4: RESET DE FÁBRICA SEGURO ---
+    function resetFabrica() {
+        if(confirm("¿Estás seguro de BORRAR TODO? Se reiniciarán todos los valores.")) {
+            const logo = localStorage.getItem('mf_logo');
+            localStorage.clear();
+            // Restauramos el logo para no molestar
+            if(logo) localStorage.setItem('mf_logo', logo);
+            
+            // MÉTODO SEGURO: En vez de location.reload() que falla en local/temp
+            // Redirigimos a la misma URL explícitamente.
+            window.location.href = window.location.href;
+        }
+    }
+
+    // --- FUNCIONES AUXILIARES ---
+    function autoCalcZ(mH) {
+        if(document.activeElement.id === 'z_manual') return;
+        for(let z=30; z<=130; z++) { if ((z * PASO) >= (mH + 2)) { document.getElementById('z_manual').value = z; break; } }
+    }
+    function calcZManual() {
+        const z = parseFloat(document.getElementById('z_manual').value)||0;
+        const teo = z*PASO;
+        document.getElementById('cr_comp').innerText = (teo*0.983).toFixed(2)+" mm";
+        document.getElementById('cr_teo').innerText = teo.toFixed(2)+" mm";
+        let inv = JSON.parse(localStorage.getItem('mf_inventario_z')||'{}');
+        const stock = inv[z]||0;
+        document.getElementById('stock_display').innerText = "Stock Disponible: "+stock;
+        document.getElementById('stock_display').style.color = stock > 0 ? "green" : "#d32f2f";
+    }
+    function abrirGestorZ() {
+        let zS = prompt("Z a modificar:"); if(!zS) return;
+        let inv = JSON.parse(localStorage.getItem('mf_inventario_z')||'{}');
+        let nS = prompt(`Stock actual Z${zS}: ${inv[zS]||0}. Nuevo stock:`);
+        if(nS!==null) { inv[zS]=parseInt(nS); localStorage.setItem('mf_inventario_z', JSON.stringify(inv)); calcZManual(); }
+    }
+        function generarReporteZ() {
+        const inv = JSON.parse(localStorage.getItem('mf_inventario_z'));
+        if(!inv) { alert("No hay datos."); return; }
+
+        // Crear HTML para el PDF con estilo
+        let html = `
+            <div style="padding:20px; font-family:Helvetica;">
+                <h2 style="color:#0d47a1; border-bottom:2px solid #0d47a1;">Inventario de Cilindros (Z)</h2>
+                <p>Fecha: ${new Date().toLocaleDateString()}</p>
+                <table style="width:100%; border-collapse:collapse; margin-top:20px; font-size:12px;">
+                    <tr style="background:#eee;">
+                        <th style="border:1px solid #ddd; padding:8px;">Medida (Z)</th>
+                        <th style="border:1px solid #ddd; padding:8px;">Cantidad</th>
+                        <th style="border:1px solid #ddd; padding:8px;">Estado</th>
+                    </tr>`;
+        
+        Object.keys(inv).sort((a,b)=>a-b).forEach(k => {
+            if(inv[k] > 0 || k % 10 === 0) { // Mostrar si hay stock o si es decena (30, 40...)
+                const color = inv[k] > 0 ? "green" : "red";
+                html += `
+                    <tr>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center;">Z-${k}</td>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center;"><b>${inv[k]}</b></td>
+                        <td style="border:1px solid #ddd; padding:8px; text-align:center; color:${color};">${inv[k]>0?'Disponible':'Agotado'}</td>
+                    </tr>`;
+            }
+        });
+        html += "</table></div>";
+
+        // Generar PDF
+        const element = document.createElement('div');
+        element.innerHTML = html;
+        const opt = {
+            margin: 10,
+            filename: 'Inventario_Cilindros_Z.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        // Llamada segura a la librería
+        if(window.html2pdf) {
+            html2pdf().set(opt).from(element).save();
+        } else {
+            alert("Error: Librería PDF no cargada. Revise su conexión a internet.");
+        }
+    }
+
+    function setMasterMode(mode) {
+        masterMode = mode;
+        document.getElementById('mode-guias').className = mode === 'guias' ? 'mode-btn active' : 'mode-btn';
+        document.getElementById('mode-neto').className = mode === 'neto' ? 'mode-btn active' : 'mode-btn';
+        runCirel();
+    }
+    function generarTablaOpt() {
+        const w = parseFloat(document.getElementById('cw').value)||0;
+        const h = parseFloat(document.getElementById('ch').value)||0;
+        const ncir = parseFloat(document.getElementById('cn_cir').value)||1;
+        const col = parseFloat(document.getElementById('ccol').value)||1;
+        const filas = parseFloat(document.getElementById('cfilas').value)||1;
+        const costoBase = parseFloat(localStorage.getItem('mf_cirel'))||0.06;
+        const totalA = parseFloat(document.getElementById('cr_total').innerText.replace('$ ','')) || 0;
+        const wB = h; const hB = w; 
+        const bWB = (wB*col) + ((col-1)*3); const bHB = (hB*filas) + ((filas-1)*3);
+        const mWB = bWB + 9; const mHB = bHB + 9;
+        const areaB = ((mWB/10)+2) * ((mHB/10)+2);
+        const subB = areaB * ncir * costoBase;
+        const totalB = subB * 1.15; 
+        const mejorA = totalA <= totalB;
+        document.getElementById('cr_tabla_opt').innerHTML = `
+            <table class="tabla-opt"><tr style="background:#eee"><td>Opción</td><td>Costo</td></tr>
+            <tr class="${mejorA?'mejor-fila':''}"><td>Actual (V)</td><td>$ ${totalA.toFixed(2)}</td></tr>
+            <tr class="${!mejorA?'mejor-fila':''}"><td>Girado (H)</td><td>$ ${totalB.toFixed(2)}</td></tr></table>`;
+    }
+    function toggleLaminado(type) {
+        if(currentLam === type) currentLam = 'ninguno'; else currentLam = type;
+        updateLamButtons(); runFlexo();
+    }
+    function updateLamButtons() {
+        const btnMate = document.getElementById('btn_lam_mate');
+        const btnBrill = document.getElementById('btn_lam_brill');
+        btnMate.className = 'acabado-btn'; btnBrill.className = 'acabado-btn';
+        if(currentLam === 'mate') btnMate.classList.add('active');
+        if(currentLam === 'brillante') btnBrill.classList.add('active');
+    }
+    function abrirModalEmpresa() { document.getElementById('modal-empresa').style.display = 'flex'; }
+    function guardarDatosEmpresa() {
+        localStorage.setItem('mf_datos_empresa', document.getElementById('txt_datos_empresa').value);
+        document.getElementById('modal-empresa').style.display = 'none';
+        alert("Datos guardados.");
+    }
+    function formatearNegrita() {
+        const txt = document.getElementById('txt_datos_empresa');
+        const start = txt.selectionStart; const end = txt.selectionEnd;
+        const text = txt.value;
+        txt.value = text.substring(0, start) + "<b>" + text.substring(start, end) + "</b>" + text.substring(end);
+    }
+    function toggleConfig(show) { 
+        document.getElementById('config-panel').style.display = show ? 'block' : 'none';
+        if (!show) document.querySelectorAll('#config-panel input').forEach(i => i.disabled = true);
+    }
+    function checkPass() { if(prompt("Contraseña Adm:") === "1234") { document.querySelectorAll('#config-panel input').forEach(i => i.disabled = false); alert("🔓 Edición Habilitada"); } else { alert("❌ Error"); } }
+    function saveAll() { 
+        CONFIG_IDS.forEach(id => { const el=document.getElementById('conf_'+id); if(el) localStorage.setItem('mf_'+id, el.value); }); 
+        toggleConfig(false); runFlexo(); alert("Configuración Guardada ✅"); 
+    }
+    function exportarConfiguracion() { const d = JSON.stringify(localStorage); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([d], {type:'application/json'})); a.download='Backup.json'; a.click(); }
+    function importarConfiguracion(i) { if(i.files[0]) { const r=new FileReader(); r.onload=e=>{ const d=JSON.parse(e.target.result); Object.keys(d).forEach(k=>localStorage.setItem(k, d[k])); location.reload(); }; r.readAsText(i.files[0]); } }
+    
+
+    function abrirHistorial() { toggleSec('sec_historial'); }
+    function girarMedidas() { const t=document.getElementById('cw').value; document.getElementById('cw').value=document.getElementById('ch').value; document.getElementById('ch').value=t; runCirel(); }
+    function selMat(id) { currentMat=id; document.querySelectorAll('.f-mat-card').forEach(c=>c.classList.remove('selected')); document.getElementById('card_'+id).classList.add('selected'); runFlexo(); }
+    function toggleVincularCirel() { vincularCirel=!vincularCirel; document.getElementById('btn_vincular_presupuesto').style.background = vincularCirel?"#0d47a1":"white"; document.getElementById('btn_vincular_presupuesto').style.color=vincularCirel?"white":"#0d47a1"; runFlexo(); }
+    function recalcCirelByGrid(t) { if(t==='total') document.getElementById('ctot').value = document.getElementById('ccol').value * document.getElementById('cfilas').value; runCirel(); }
+    function subirLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload=e=>{localStorage.setItem('mf_logo',e.target.result); document.getElementById('logo-preview').src=e.target.result; document.getElementById('logo-preview').style.display='block';}; r.readAsDataURL(i.files[0]); } }
+    function wsAction(app) {
+    const c = document.getElementById('c_nom').value || "Cliente";
+    const anchoE = document.getElementById('cw').value || 0;
+    const altoE = document.getElementById('ch').value || 0;
+    let msg = "";
+
+    // 1. WHATSAPP CLIENTE CIREL
+    if (app === 'cirel') {
+        const cantC = document.getElementById('cn_cir').value || 1;
+        const subC = document.getElementById('cr_sub').innerText;
+        const ivaC = document.getElementById('cr_iva').innerText;
+        const totalC = document.getElementById('cr_total').innerText;
+
+        msg = `*COTIZACIÓN SERVICIO CIREL - ${c}*\n` +
+              `----------------------------------\n` +
+              `✅ Cantidad: ${cantC} placas\n` +
+              `📏 Bloque: ${document.getElementById('cr_bloque').innerText}\n` +
+              `💰 Subtotal: ${subC}\n` +
+              `➕ IVA: ${ivaC}\n` +
+              `*TOTAL A PAGAR: ${totalC}*`;
+    } 
+    
+    // 2. WHATSAPP CLIENTE FLEXO (VENTAS)
+    else if (app === 'flexo') {
+        const matSel = document.querySelector('.f-mat-card.selected');
+        const material = matSel ? matSel.innerText : "Estándar";
+        const cantF = document.getElementById('f_tot').value || 0;
+        
+        // Cálculo de reposición para el mensaje
+        const ivaP = (parseFloat(localStorage.getItem('mf_iva')) || 15) / 100;
+        const subE = parseFloat(document.getElementById('f_sub').innerText.replace('$ ', '')) || 0;
+        const unitRepo = (subE * (1 + ivaP)) / (parseFloat(cantF) || 1);
+
+        msg = `*COTIZACIÓN ETIQUETAS - ${c}*\n` +
+              `----------------------------------\n` +
+              `📏 Tamaño: ${anchoE} x ${altoE} mm\n` +
+              `🎞️ Material: ${material}\n` +
+              `✨ Terminado: ${currentLam === 'ninguno' ? 'SIN LAMINAR' : 'LAMINADO ' + currentLam.toUpperCase()}\n` +
+              `🔢 Cantidad: ${cantF} etiquetas\n` +
+              `----------------------------------\n` +
+              `💰 Subtotal: ${document.getElementById('f_sub').innerText}\n` +
+              `➕ IVA: ${document.getElementById('f_iva').innerText}\n` +
+              `*TOTAL PEDIDO: ${document.getElementById('f_total').innerText}*\n\n` +
+              `💡 _Precio unitario de reposición: $${unitRepo.toFixed(4)} inc. IVA_`;
+    } 
+    
+            // 3. WHATSAPP PRODUCCIÓN (TALLER) - REFLEJO EXACTO DE ORDEN DE TRABAJO (SIN PRECIOS)
+    else if (app === 'produccion') {
+        const matSel = document.querySelector('.f-mat-card.selected');
+        const material = matSel ? matSel.innerText : "No especificado";
+        const anchoMat = document.getElementById('f_anc').value || 0;
+        const cantF = document.getElementById('f_tot').value || 0;
+        const cantCireles = document.getElementById('cn_cir').value || 1; // Añadimos los Cireles
+
+        msg = `*📦 ORDEN DE TALLER - ${c}*\n` +
+              `----------------------------------\n` +
+              `📏 Tamaño Etiqueta: ${anchoE} x ${altoE} mm\n` +
+              `🎞️ Material: ${material}\n` +
+              `✨ Acabado: ${currentLam === 'ninguno' ? 'SIN LAMINAR' : 'LAMINADO ' + currentLam.toUpperCase()}\n` +
+              `----------------------------------\n` +
+              `⚙️ Cilindro (Z): Z-${document.getElementById('z_manual').value}\n` +
+              `🖨️ Cant. Cireles: ${cantCireles}\n` +
+              `🔢 Total Etiquetas: ${cantF}\n` +
+              `↔️ Ancho Material: ${anchoMat} cm\n` +
+              `📏 Metros Lineales: ${document.getElementById('f_res_m').innerText}\n` +
+              `📏 Metraje (Pies): ${document.getElementById('f_res_pies').innerText}\n` +
+              `----------------------------------`;
+    }
+
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+
+
+  /* ===========================================================
+   FUNCIÓN DE IMPRESIÓN (CORREGIDA: SIN SIGLAS + TEXTO "INCL. IVA")
+   =========================================================== */
+function ejecutarImpresionMasterflexo(tipo) {
+    
+    // 1. Guardado en segundo plano
+    if(typeof guardarEnHistorial === 'function') {
+        guardarEnHistorial(true).catch(err => console.log("Error guardado:", err));
+    }
+
+    // 2. Preparación Visual
+    let numActual = parseInt(localStorage.getItem('mf_num_proforma')) || 1;
+    document.getElementById('p_num_secuencia').innerText = "N° " + numActual.toString().padStart(4, '0');
+    localStorage.setItem('mf_num_proforma', numActual + 1);
+
+    const logo = localStorage.getItem('mf_logo');
+    if(logo) document.getElementById('print_logo_img').src = logo;
+    
+    document.getElementById('p_cliente').innerText = document.getElementById('c_nom').value || "CONSUMIDOR FINAL";
+    document.getElementById('p_ruc').innerText = "RUC/CI: " + (document.getElementById('c_ruc').value || "9999999999");
+    document.getElementById('p_fecha').innerText = document.getElementById('fecha').value;
+    document.getElementById('p_footer_text').innerHTML = (document.getElementById('txt_datos_empresa').value || "").replace(/\n/g, '<br>');
+    document.getElementById('p_firma_nom').innerText = localStorage.getItem('mf_firma_nom') || "";
+    document.getElementById('p_firma_cargo').innerText = localStorage.getItem('mf_firma_cargo') || "";
+
+    const tablaCuerpo = document.getElementById('p_tabla_cuerpo');
+    tablaCuerpo.innerHTML = ""; 
+
+    // --- VARIABLES DE CÁLCULO ---
+    let subtotalFlexo = 0;
+    let valorCirelTotal = 0; 
+    let cantidadCireles = document.getElementById('cn_cir').value || 1; 
+
+    // A. Si es FLEXO
+    if (tipo === 'flexo') {
+        const matNom = document.querySelector('.f-mat-card.selected') ? document.querySelector('.f-mat-card.selected').innerText : "Etiquetas";
+        const cant = parseFloat(document.getElementById('f_tot').value) || 0;
+        const ancho = document.getElementById('cw').value;
+        const alto = document.getElementById('ch').value;
+        const subtotalFlexoUI = parseFloat(document.getElementById('f_sub').innerText.replace('$ ', '')) || 0;
+        subtotalFlexo = subtotalFlexoUI;
+        
+        tablaCuerpo.innerHTML += `
+            <tr>
+                <td><strong>Producción: ${matNom}</strong><br><small>${ancho}x${alto} mm ${currentLam !== 'ninguno' ? '+ ' + currentLam : ''}</small></td>
+                <td class="col-center">${cant}</td>
+                <td class="col-right">$ ${(subtotalFlexo/cant).toFixed(4)}</td>
+                <td class="col-right">$ ${subtotalFlexo.toFixed(2)}</td>
+            </tr>`;
+
+        if (vincularCirel) {
+            valorCirelTotal = parseFloat(document.getElementById('f_res_solo_cirel').innerText.replace('$ ', '')) || 0;
+        }
+
+    } else {
+        // B. Si es solo CIREL
+        subtotalFlexo = parseFloat(document.getElementById('cr_sub').innerText.replace('$ ', '')) || 0;
+        
+        tablaCuerpo.innerHTML += `
+            <tr>
+                <td><strong>Servicio de Cyrel (Placas)</strong></td>
+                <td class="col-center">${cantidadCireles}</td>
+                <td class="col-right">$ ${(subtotalFlexo/cantidadCireles).toFixed(2)}</td>
+                <td class="col-right">$ ${subtotalFlexo.toFixed(2)}</td>
+            </tr>`;
+    }
+
+    // --- TOTALES ---
+    const ivaPorc = (parseFloat(localStorage.getItem('mf_iva')) || 15) / 100;
+    const valorIVAFlexo = subtotalFlexo * ivaPorc;
+    const totalFlexoConIVA = subtotalFlexo + valorIVAFlexo;
+    const granTotalFinal = totalFlexoConIVA + valorCirelTotal;
+
+    const contenedorTotales = document.querySelector('.totals-table');
+    
+    // --- AQUÍ ESTÁ EL CAMBIO SOLICITADO ---
+    // Se eliminó "jgs" y se agregó "Incl. IVA"
+    contenedorTotales.innerHTML = `
+        <tbody>
+            <tr><td class="t-label">Subtotal:</td><td>$ ${subtotalFlexo.toFixed(2)}</td></tr>
+            <tr><td class="t-label">IVA (15%):</td><td>$ ${valorIVAFlexo.toFixed(2)}</td></tr>
+            
+            <tr>
+                <td class="t-label" style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">TOTAL ${tipo === 'flexo' ? 'ETIQUETAS' : 'SERVICIO'}:</td>
+                <td style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">$ ${totalFlexoConIVA.toFixed(2)}</td>
+            </tr>
+
+            ${valorCirelTotal > 0 ? `
+                <tr>
+                    <td class="t-label" style="padding-top:10px; color:#0d47a1;">+ Cirel (${cantidadCireles} Placas) Incl. IVA:</td>
+                    <td style="padding-top:10px; color:#0d47a1;">$ ${valorCirelTotal.toFixed(2)}</td>
+                </tr>
+            ` : ''}
+
+            <tr>
+                <td class="t-grand" style="font-size:16px; border-top:2px solid #0d47a1;">TOTAL A CANCELAR:</td>
+                <td class="t-grand" style="font-size:16px; border-top:2px solid #0d47a1;">$ ${granTotalFinal.toFixed(2)}</td>
+            </tr>
+        </tbody>
+    `;
+
+          // MODO IMPRESIÓN PROFORMA
+    document.body.classList.remove('modo-orden');
+    document.body.classList.add('modo-proforma');
+    
+    window.print();
+}
+
+
+
+
+/* ===========================================================
+   BLOQUE DE HISTORIAL Y GUARDADO (Masterflexo 6.0 Correcto)
+   =========================================================== */
+
+// 1. GENERADOR DE ESQUEMA VISUAL (Cuadritos negros y blancos)
+function generarEsquemaVisual() {
+    const cols = parseInt(document.getElementById('ccol').value) || 1;
+    const filas = parseInt(document.getElementById('cfilas').value) || 1;
+    const total = parseInt(document.getElementById('ctot').value) || (cols * filas);
+    
+    let visual = "";
+    let contador = 0;
+
+    for(let r = 0; r < filas; r++) {
+        for(let c = 0; c < cols; c++) {
+            if(contador < total) {
+                visual += "⬛ "; // Etiqueta
+            } else {
+                visual += "⬜ "; // Vacío
+            }
+            contador++;
+        }
+        visual += "\n"; 
+    }
+    return visual;
+}
+
+// 2. FUNCIÓN DE GUARDADO (Guarda todo, incluido Cantidad Cireles)
+async function guardarEnHistorial(desdeImpresion = false) {
+    const toast = document.getElementById('status-toast');
+    
+    // Solo mostrar mensaje si es guardado manual
+    if(!desdeImpresion) {
+        toast.innerText = "☁️ Guardando..."; 
+        toast.style.display = 'block'; 
+        toast.style.background = "rgba(0,0,0,0.85)";
+    }
+
+    try {
+        const esquemaBloques = generarEsquemaVisual();
+
+        const datosCompletos = {
+            id: Date.now(),
+            fecha: new Date().toLocaleString(),
+            cliente: document.getElementById('c_nom').value || "Cliente General",
+            ruc: document.getElementById('c_ruc').value || "S/R",
+            
+            // Económicos
+            total: document.getElementById('f_total').innerText,
+            subtotal: document.getElementById('f_sub').innerText,
+            
+            // Estados y Config
+            material: currentMat,
+            laminado: currentLam,
+            vincular: vincularCirel, 
+
+            // --- DATOS CIREL ---
+            cw: document.getElementById('cw').value,
+            ch: document.getElementById('ch').value,
+            cgh: document.getElementById('cgh').value,
+            cgv: document.getElementById('cgv').value,
+            ccol: document.getElementById('ccol').value,
+            cfilas: document.getElementById('cfilas').value,
+            ctot: document.getElementById('ctot').value,
+            cn_cir: document.getElementById('cn_cir').value, // IMPORTANTE: Cantidad Cireles
+            
+            // --- DATOS FLEXO ---
+            f_cmB: document.getElementById('f_cmB').value,
+            f_etB: document.getElementById('f_etB').value,
+            f_tot: document.getElementById('f_tot').value,
+            f_anc: document.getElementById('f_anc').value,
+            f_desc_extra: document.getElementById('f_desc_extra').value,
+            f_extra: document.getElementById('f_extra').value,
+            
+            // Esquema Visual
+            esquema: esquemaBloques
+        };
+
+        // Guardado Local (LocalStorage)
+        let h = JSON.parse(localStorage.getItem('mf_historial') || '[]');
+        h.unshift(datosCompletos);
+        if (h.length > 50) h.pop(); // Máximo 50 registros
+        localStorage.setItem('mf_historial', JSON.stringify(h));
+        
+        // Actualizar la lista visualmente
+        renderizarHistorial();
+
+                // Envío a Google Sheets (Nube) EN SEGUNDO PLANO
+        fetch(CLOUD_URL, { 
+            method: "POST", 
+            mode: "no-cors", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify(datosCompletos) 
+        }).catch(err => console.log("Nube error:", err));
+
+        if(!desdeImpresion) {
+            toast.innerText = "✅ Guardado";
+            toast.style.background = "#2e7d32";
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+        return true;
+
+
+    } catch (e) {
+        console.error("Error save:", e);
+        // Si falla, al menos retorna true para no bloquear la impresión
+        return true; 
+    }
+}
+
+// 3. RENDERIZAR LISTA (Para que se vea el historial al abrirlo)
+function renderizarHistorial() {
+    const h = JSON.parse(localStorage.getItem('mf_historial')||'[]');
+    const contenedor = document.getElementById('lista_historial');
+    if (!contenedor) return;
+
+    contenedor.innerHTML = h.map((i, index) => `
+        <div onclick="cargarHistorial(${index})" style="border-bottom:1px solid #eee; padding:12px; cursor:pointer; background:white;" 
+             onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='white'">
+            <strong style="color:var(--p-color);">${i.cliente}</strong><br>
+            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                <span style="font-size:11px; color:#555;">${i.total}</span>
+                <span style="font-size:10px; color:#999;">${i.fecha}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 4. CARGAR HISTORIAL (Rellena TODOS los campos)
+function cargarHistorial(index) {
+    const h = JSON.parse(localStorage.getItem('mf_historial') || '[]');
+    const d = h[index];
+    
+    if (d) {
+        // Cliente
+        document.getElementById('c_nom').value = d.cliente || "";
+        document.getElementById('c_ruc').value = d.ruc || "";
+
+        // Restaurar CIREL
+        document.getElementById('cw').value = d.cw || 50;
+        document.getElementById('ch').value = d.ch || 30;
+        document.getElementById('cgh').value = d.cgh || 3;
+        document.getElementById('cgv').value = d.cgv || 3;
+        document.getElementById('ccol').value = d.ccol || 2;
+        document.getElementById('cfilas').value = d.cfilas || 5;
+        document.getElementById('ctot').value = d.ctot || 10;
+        document.getElementById('cn_cir').value = d.cn_cir || 1; // Recupera cantidad cireles
+
+        // Restaurar FLEXO
+        document.getElementById('f_cmB').value = d.f_cmB || 22.25;
+        document.getElementById('f_etB').value = d.f_etB || 6;
+        document.getElementById('f_tot').value = d.f_tot || 5000;
+        document.getElementById('f_anc').value = d.f_anc || 10;
+        document.getElementById('f_desc_extra').value = d.f_desc_extra || 0;
+        document.getElementById('f_extra').value = d.f_extra || 0;
+
+        // Restaurar Material y Laminado
+        if (d.material) selMat(d.material);
+        if (d.laminado) {
+            currentLam = d.laminado;
+            updateLamButtons();
+        }
+
+        // Restaurar Vinculación
+        vincularCirel = d.vincular || false; 
+        const btnVinc = document.getElementById('btn_vincular_presupuesto');
+        if (vincularCirel) {
+            btnVinc.style.background = "#0d47a1";
+            btnVinc.style.color = "white";
+        } else {
+            btnVinc.style.background = "white";
+            btnVinc.style.color = "#0d47a1";
+        }
+
+        // Recalcular todo
+        runCirel();
+        runFlexo();
+
+        toggleSec('sec_historial'); // Cerrar panel
+        
+        // Mensaje discreto
+        const toast = document.getElementById('status-toast');
+        toast.innerText = "✅ Datos cargados";
+        toast.style.display = 'block';
+        toast.style.background = "#2e7d32";
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    }
+}
+
+// 5. BORRAR HISTORIAL
+function borrarHistorial() { 
+    if(confirm("¿Borrar todo el historial local?")) {
+        localStorage.removeItem('mf_historial'); 
+        renderizarHistorial(); 
+    }
+}
+
+/* ===========================================================
+   SISTEMA DE CARRITO DE COMPRAS (MULTIPLE TAMAÑOS)
+   =========================================================== */
+let carritoGlobal = [];
+
+function agregarAlCarrito() {
+    const matNom = document.querySelector('.f-mat-card.selected') ? document.querySelector('.f-mat-card.selected').innerText : "Etiquetas";
+    const cant = parseFloat(document.getElementById('f_tot').value) || 0;
+    const ancho = document.getElementById('cw').value;
+    const alto = document.getElementById('ch').value;
+    
+    const subtotalFlexo = parseFloat(document.getElementById('f_sub').innerText.replace('$ ', '')) || 0;
+    const ivaFlexo = parseFloat(document.getElementById('f_iva').innerText.replace('$ ', '')) || 0;
+    
+    let valorCirel = 0;
+    let cantCireles = document.getElementById('cn_cir').value || 1;
+    if (vincularCirel) {
+        valorCirel = parseFloat(document.getElementById('f_res_solo_cirel').innerText.replace('$ ', '')) || 0;
+    }
+
+    const item = {
+        id: Date.now(),
+        descripcion: `${matNom} (${ancho}x${alto} mm) ${currentLam !== 'ninguno' ? '+ ' + currentLam : ''}`,
+        cantidad: cant,
+        subtotal: subtotalFlexo,
+        iva: ivaFlexo,
+        tieneCirel: vincularCirel,
+        valorCirel: valorCirel,
+        cantCireles: cantCireles
+    };
+
+    carritoGlobal.push(item);
+    actualizarIconoCarrito();
+    
+    // Guardado individual en el historial de manera silenciosa
+    if(typeof guardarEnHistorial === 'function') {
+        guardarEnHistorial(true).catch(err => console.log("Error guardando en historial:", err));
+    }
+
+    const toast = document.getElementById('status-toast');
+    toast.innerText = `✅ ${ancho}x${alto} al pedido e Historial`;
+    toast.style.background = "#ff9800";
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 2000);
+}
+
+function actualizarIconoCarrito() {
+    const btn = document.querySelector('.btn-flotante-carrito');
+    const badge = document.getElementById('badge-contador');
+    if (carritoGlobal.length > 0) {
+        btn.style.display = 'flex';
+        badge.innerText = carritoGlobal.length;
+    } else {
+        btn.style.display = 'none';
+    }
+}
+
+function abrirCarrito() {
+    const lista = document.getElementById('lista-items-carrito');
+    lista.innerHTML = '';
+    
+    let totalAcumulado = 0;
+
+    carritoGlobal.forEach((item, index) => {
+        let totalItem = item.subtotal + item.iva + item.valorCirel;
+        totalAcumulado += totalItem;
+        
+        lista.innerHTML += `
+            <div class="item-carrito">
+                <div>
+                    <strong>${item.descripcion}</strong><br>
+                    <span style="color:#666;">Cant: ${item.cantidad} | Sub: $${item.subtotal.toFixed(2)} ${item.tieneCirel ? '| +Cirel: $'+item.valorCirel.toFixed(2) : ''}</span>
+                </div>
+                <div style="text-align:right;">
+                    <strong style="color:var(--p-color);">$${totalItem.toFixed(2)}</strong><br>
+                    <button onclick="eliminarDelCarrito(${index})" style="background:none; border:none; color:red; cursor:pointer; font-size:16px;">🗑️</button>
+                </div>
+            </div>
+        `;
+    });
+
+    if(carritoGlobal.length === 0) {
+        lista.innerHTML = '<p style="text-align:center; color:#888;">El pedido está vacío.</p>';
+    }
+
+    document.getElementById('modal-carrito').style.display = 'flex';
+}
+
+function cerrarCarrito() { document.getElementById('modal-carrito').style.display = 'none'; }
+function eliminarDelCarrito(index) { carritoGlobal.splice(index, 1); abrirCarrito(); actualizarIconoCarrito(); }
+function vaciarCarrito() { carritoGlobal = []; cerrarCarrito(); actualizarIconoCarrito(); }
+
+/* ===========================================================
+   IMPRESIÓN: ORDEN DE TRABAJO (TALLER)
+   =========================================================== */
+function generarPDFOrdenTrabajo() {
+    // 1. Recargar el logotipo si existe
+    const logoGuardado = localStorage.getItem('mf_logo');
+    const imgLogoOrden = document.getElementById('ot_logo_img');
+    if (logoGuardado) {
+        imgLogoOrden.src = logoGuardado;
+        imgLogoOrden.style.display = 'block';
+    }
+
+        // 2. Recolectar datos
+    document.getElementById('ot_fecha').innerText = document.getElementById('fecha').value || new Date().toLocaleDateString();
+    document.getElementById('ot_cliente').innerText = document.getElementById('c_nom').value || "CLIENTE NO ESPECIFICADO";
+    document.getElementById('ot_tamano').innerText = document.getElementById('cw').value + " x " + document.getElementById('ch').value + " mm";
+    document.getElementById('ot_z').innerText = "Z-" + document.getElementById('z_manual').value;
+    document.getElementById('ot_cireles').innerText = document.getElementById('cn_cir').value;
+    document.getElementById('ot_cantidad').innerText = document.getElementById('f_tot').value;
+    document.getElementById('ot_ancho_mat').innerText = document.getElementById('f_anc').value + " cm";
+    document.getElementById('ot_pies').innerText = document.getElementById('f_res_pies').innerText;
+    
+    // Extraer metros lineales
+    if(document.getElementById('ot_metros')) {
+        document.getElementById('ot_metros').innerText = document.getElementById('f_res_m').innerText;
+    }
+
+
+    // 3. Clonar el gráfico
+    const esquemaOriginal = document.getElementById('area-cirel');
+    const contenedorDestino = document.getElementById('ot_esquema_contenedor');
+    contenedorDestino.innerHTML = ''; 
+    if(esquemaOriginal) {
+        const copiaEsquema = esquemaOriginal.cloneNode(true);
+        copiaEsquema.id = "area-cirel-clon"; 
+        contenedorDestino.appendChild(copiaEsquema);
+    }
+
+        // 4. MODO IMPRESIÓN ORDEN (¡Sin setTimeout!)
+    document.body.classList.remove('modo-proforma');
+    document.body.classList.add('modo-orden');
+    
+    window.print();
+}
+
+
+
+
+
+
+/* ===========================================================
+   IMPRESIÓN DEL CARRITO COMPLETO (DESGLOSE POR ETIQUETA + SUMA DE PLACAS)
+   =========================================================== */
+function imprimirPedidoCompleto() {
+    if(carritoGlobal.length === 0) { alert("El carrito está vacío."); return; }
+    
+    // Preparar Cabeceras
+    let numActual = parseInt(localStorage.getItem('mf_num_proforma')) || 1;
+    document.getElementById('p_num_secuencia').innerText = "N° " + numActual.toString().padStart(4, '0');
+    localStorage.setItem('mf_num_proforma', numActual + 1);
+
+    const logo = localStorage.getItem('mf_logo');
+    if(logo) document.getElementById('print_logo_img').src = logo;
+    
+    document.getElementById('p_cliente').innerText = document.getElementById('c_nom').value || "CONSUMIDOR FINAL";
+    document.getElementById('p_ruc').innerText = "RUC/CI: " + (document.getElementById('c_ruc').value || "9999999999");
+    document.getElementById('p_fecha').innerText = document.getElementById('fecha').value;
+    document.getElementById('p_footer_text').innerHTML = (document.getElementById('txt_datos_empresa').value || "").replace(/\n/g, '<br>');
+    document.getElementById('p_firma_nom').innerText = localStorage.getItem('mf_firma_nom') || "";
+    document.getElementById('p_firma_cargo').innerText = localStorage.getItem('mf_firma_cargo') || "";
+
+    const tablaCuerpo = document.getElementById('p_tabla_cuerpo');
+    tablaCuerpo.innerHTML = ""; 
+
+    let sumSubtotal = 0;
+    let sumIva = 0;
+    let sumCirel = 0;
+    let totalPlacas = 0; // <--- AQUÍ ESTÁ EL CONTADOR DE PLACAS
+
+    // Generar filas inyectando el detalle de IVA y Cireles por cada etiqueta
+    carritoGlobal.forEach(item => {
+        sumSubtotal += item.subtotal;
+        sumIva += item.iva;
+        sumCirel += item.valorCirel;
+        
+        // Vamos sumando las placas al total general
+        if (item.tieneCirel && item.valorCirel > 0) {
+            totalPlacas += parseInt(item.cantCireles) || 0;
+        }
+
+        // Construimos el texto con el desglose individual
+        let detalleDesglose = `<div style="margin-top:6px; font-size:10px; color:#555;">`;
+        detalleDesglose += `▶ <b>Subtotal:</b> $${item.subtotal.toFixed(2)} | <b>IVA:</b> $${item.iva.toFixed(2)}`;
+        
+        if (item.tieneCirel && item.valorCirel > 0) {
+            detalleDesglose += `<br><span style="color:#0d47a1; font-weight:bold;">▶ Incluye ${item.cantCireles} Cirel(es): $${item.valorCirel.toFixed(2)} (Inc. IVA)</span>`;
+        }
+        detalleDesglose += `</div>`;
+
+        tablaCuerpo.innerHTML += `
+            <tr>
+                <td style="vertical-align: top;">
+                    <strong>Producción: ${item.descripcion.split('(')[0]}</strong><br>
+                    <small>${item.descripcion.substring(item.descripcion.indexOf('('))}</small>
+                    ${detalleDesglose}
+                </td>
+                <td class="col-center" style="vertical-align: top;">${item.cantidad}</td>
+                <td class="col-right" style="vertical-align: top;">$ ${(item.subtotal / item.cantidad).toFixed(4)}</td>
+                <td class="col-right" style="vertical-align: top;">$ ${item.subtotal.toFixed(2)}</td>
+            </tr>`;
+    });
+
+    const totalConIva = sumSubtotal + sumIva;
+    const granTotalFinal = totalConIva + sumCirel;
+
+    // Generar Totales respetando tu diagramación
+    const contenedorTotales = document.querySelector('.totals-table');
+    contenedorTotales.innerHTML = `
+        <tbody>
+            <tr><td class="t-label">Subtotal General:</td><td>$ ${sumSubtotal.toFixed(2)}</td></tr>
+            <tr><td class="t-label">IVA General (15%):</td><td>$ ${sumIva.toFixed(2)}</td></tr>
+            
+            <tr>
+                <td class="t-label" style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">TOTAL ETIQUETAS:</td>
+                <td style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">$ ${totalConIva.toFixed(2)}</td>
+            </tr>
+
+            ${sumCirel > 0 ? `
+                <tr>
+                    <td class="t-label" style="padding-top:10px; color:#0d47a1;">+ Total Cireles (${totalPlacas} Placas) Incl. IVA:</td>
+                    <td style="padding-top:10px; color:#0d47a1;">$ ${sumCirel.toFixed(2)}</td>
+                </tr>
+            ` : ''}
+
+            <tr>
+                <td class="t-grand" style="font-size:16px; border-top:2px solid #0d47a1;">TOTAL A CANCELAR:</td>
+                <td class="t-grand" style="font-size:16px; border-top:2px solid #0d47a1;">$ ${granTotalFinal.toFixed(2)}</td>
+            </tr>
+        </tbody>
+    `;
+
+                cerrarCarrito();
+    
+    // MODO IMPRESIÓN PROFORMA
+    document.body.classList.remove('modo-orden');
+    document.body.classList.add('modo-proforma');
+    
+    window.print();
+}
+
+
+// Registro del Service Worker para permitir la instalación
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('✅ PWA: Service Worker registrado con éxito', reg.scope))
+            .catch(err => console.error('❌ PWA: Error al registrar el Service Worker', err));
+    });
+}
+
+
+</script>
+<div id="orden-trabajo-layout" style="display:none; padding: 30px; font-family: 'Helvetica', Arial, sans-serif; background: white; color: #333; width: 800px;">
+        <div style="border-bottom: 3px solid #607d8b; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="width: 40%;">
+            <img id="ot_logo_img" src="" style="max-width: 250px; max-height: 80px; object-fit: contain; display: none;">
+        </div>
+        <div style="width: 60%; text-align: right;">
+            <h1 style="color: #455a64; margin: 0; font-size: 24px; letter-spacing: 1px;">ORDEN DE TALLER</h1>
+            <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">Fecha: <span id="ot_fecha" style="font-weight:bold;"></span></p>
+        </div>
+    </div>
+
+    
+    <div style="margin-bottom: 25px; font-size: 16px; background: #eceff1; padding: 10px; border-radius: 5px;">
+        <strong>CLIENTE:</strong> <span id="ot_cliente" style="text-transform: uppercase;"></span>
+    </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px;">
+        <tr>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; background: #f8fdff; width: 25%;"><strong>Tamaño Etiqueta:</strong></td>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; font-weight: bold; color: #0d47a1; width: 25%;" id="ot_tamano"></td>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; background: #f8fdff; width: 25%;"><strong>Cilindro (Z):</strong></td>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; font-weight: bold; color: #c62828; width: 25%;" id="ot_z"></td>
+        </tr>
+        <tr>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; background: #f8fdff;"><strong>Cant. Cireles:</strong></td>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; font-weight: bold;" id="ot_cireles"></td>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; background: #f8fdff;"><strong>Total Etiquetas:</strong></td>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; font-weight: bold;" id="ot_cantidad"></td>
+        </tr>
+        <tr>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; background: #f8fdff;"><strong>Ancho Material:</strong></td>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; font-weight: bold;" id="ot_ancho_mat"></td>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; background: #f8fdff;"><strong>Metraje Necesario:</strong></td>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; font-weight: bold; color: #1b5e20;" id="ot_pies"></td>
+        </tr>
+        <tr>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; background: #f8fdff;"><strong>Metros Lineales:</strong></td>
+            <td style="border: 2px solid #cfd8dc; padding: 12px; font-weight: bold; color: #0d47a1;" id="ot_metros" colspan="3"></td>
+        </tr>
+    </table>
+
+
+    <div style="border: 2px dashed #90a4ae; padding: 20px; border-radius: 10px; text-align: center; background: #fafafa;">
+        <h3 style="margin-top: 0; color: #455a64; margin-bottom: 20px;">ESQUEMA DE MONTAJE (GUÍA)</h3>
+        <div id="ot_esquema_contenedor" style="display: flex; justify-content: center; transform: scale(1.1); transform-origin: top center; min-height: 350px;">
+            </div>
+    </div>
+</div>
+
+<style>
+    .btn-flotante-carrito {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background: #B1ECE8;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        cursor: pointer;
+        z-index: 9000;
+        display: none; /* Se oculta si está vacío */
+        align-items: center;
+        justify-content: center;
+    }
+    .badge-carrito {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: red;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 50%;
+        padding: 4px 8px;
+    }
+    #modal-carrito {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85);
+        z-index: 9500;
+        align-items: center; justify-content: center;
+    }
+    .carrito-content {
+        background: white;
+        width: 90%; max-width: 500px;
+        max-height: 80vh; overflow-y: auto;
+        padding: 20px; border-radius: 15px;
+    }
+    .item-carrito {
+        border-bottom: 1px solid #eee;
+        padding: 10px 0;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    
+        
+    
+</style>
+
+<button class="btn-flotante-carrito no-print" onclick="abrirCarrito()">
+    🛒<span class="badge-carrito" id="badge-contador">0</span>
+</button>
+
+<div id="modal-carrito" class="no-print">
+    <div class="carrito-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--p-color); padding-bottom:10px; margin-bottom:10px;">
+            <h3 style="margin:0; color:var(--p-color);">🛒 Pedido Actual</h3>
+            <button onclick="cerrarCarrito()" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+        </div>
+        
+        <div id="lista-items-carrito" style="margin-bottom: 15px; font-size: 13px;">
+            </div>
+
+        <button class="btn-action" style="background:var(--s-color);" onclick="imprimirPedidoCompleto()">🖨️ IMPRIMIR PROFORMA COMPLETA</button>
+        <button class="btn-action" style="background:#d32f2f; margin-top:10px;" onclick="vaciarCarrito()">🗑️ Vaciar Pedido</button>
+    </div>
+</div>
+
+</body>
+</html>
