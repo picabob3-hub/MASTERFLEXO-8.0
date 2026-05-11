@@ -2330,6 +2330,36 @@ async function sincronizarPendientes() {
     localStorage.setItem('mf_pendientes', JSON.stringify(pendientes));
 }
 
+    // --- NUEVA FUNCIÓN: LIMPIAR Y RECARGAR NÚMERO ---
+    function limpiarParaNuevaProforma() {
+        if(confirm("¿Empezar una nueva proforma?\n\nEsto limpiará los datos del cliente actual y solicitará el número de secuencia actualizado a la nube.")) {
+            // 1. Limpiamos los campos del cliente
+            document.getElementById('c_nom').value = "";
+            document.getElementById('c_ruc').value = "";
+            document.getElementById('c_producto').value = "";
+            document.getElementById('fecha').value = new Date().toLocaleDateString(); // Actualiza la fecha al día de hoy por si acaso
+            
+            // 2. Reiniciamos la interfaz para dar respuesta visual inmediata
+            const uiIndicador = document.getElementById('ui_num_proforma');
+            if(uiIndicador) uiIndicador.innerText = "⏳ Cargando N°...";
+            numeroProformaListo = "Cargando...";
+            
+            // 3. Solicitamos el número nuevo a la nube
+            obtenerNumeroSiguienteInmediato();
+            
+            // 4. Mensaje de éxito
+            const toast = document.getElementById('status-toast');
+            toast.innerText = "✨ Listo para nueva proforma";
+            toast.style.background = "#0d47a1";
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; toast.style.background = "rgba(0,0,0,0.85)"; }, 2000);
+        }
+    }
+// FORZAR LA CARGA DEL NÚMERO INMEDIATAMENTE AL ABRIR LA APP
+document.addEventListener("DOMContentLoaded", () => {
+    obtenerNumeroSiguienteInmediato();
+});
+
 
 </script>
 <div id="orden-trabajo-layout" style="display:none; padding: 30px; font-family: 'Helvetica', Arial, sans-serif; background: white; color: #333; width: 800px;">
