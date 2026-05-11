@@ -1,4 +1,4 @@
-const CACHE_NAME = 'masterflexo-v8-cache';
+const CACHE_NAME = 'masterflexo-v8.1-cache';
 const urlsToCache = [
   './',
   './index.html',
