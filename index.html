@@ -782,7 +782,8 @@
 <div class="master-wrapper">
 
     <header class="main-header"><div class="logo-container"><img id="logo-preview" src=""></div></header>
-    
+      <!-- NUEVO: Indicador de número de proforma -->
+    <div id="ui_num_proforma" class="no-print" style="position: absolute; top: 15px; right: 20px; font-size: 11px; color: #b0bec5; font-weight: bold; z-index: 100; letter-spacing: 1px;">N° ----</div>
     <div class="header-strip no-print">
         <div style="display:flex; gap:20px; align-items:center;">
             <span class="settings-gear" onclick="guardarEnHistorial()" title="Guardar">💾</span>
@@ -1145,19 +1146,39 @@
 let numeroProformaListo = "Cargando...";
 
 async function obtenerNumeroSiguienteInmediato() {
+    // Creamos un controlador para detener la búsqueda si tarda demasiado
+    const controller = new AbortController();
+    // Fijamos el límite de tiempo en 3000 milisegundos (3 segundos)
+    const timeoutId = setTimeout(() => controller.abort(), 3000); 
+
     try {
-        // Intentamos pedir el número a la nube de inmediato
-        const response = await fetch(CLOUD_URL);
+        const urlSinCache = CLOUD_URL + "?t=" + new Date().getTime();
+        const response = await fetch(urlSinCache, { 
+            cache: "no-store",
+            signal: controller.signal // Conectamos el controlador al fetch
+        });
+        
+        // Si responde a tiempo, cancelamos el reloj de los 3 segundos
+        clearTimeout(timeoutId);
+
         if (response.ok) {
             const data = await response.text();
             numeroProformaListo = data.padStart(4, '0');
-        } else { throw new Error(); }
+        } else { 
+            throw new Error("Error en la respuesta del servidor"); 
+        }
     } catch (e) {
-        // Si no hay internet al abrir la App, usamos el respaldo local con prefijo N.I.
+        // Si no hay internet, o si pasaron los 3 segundos, cae aquí de inmediato sin trabar la app
         let numLocal = parseInt(localStorage.getItem('mf_num_proforma')) || 1;
         numeroProformaListo = "N.I. " + numLocal.toString().padStart(4, '0');
+    } finally {
+        // NUEVO: Pinta el número en la esquina superior derecha silenciosamente
+        const uiIndicador = document.getElementById('ui_num_proforma');
+        if(uiIndicador) uiIndicador.innerText = "N° " + numeroProformaListo;
     }
 }
+
+
 
             window.onload = () => {
         // --- NUEVO: Carga el número de proforma en segundo plano de inmediato ---
@@ -1697,16 +1718,28 @@ async function obtenerNumeroSiguienteInmediato() {
    FUNCIÓN DE IMPRESIÓN (CORREGIDA: SIN SIGLAS + TEXTO "INCL. IVA")
    =========================================================== */
 function ejecutarImpresionMasterflexo(tipo) {
+    // 0. VERIFICACIÓN DE SEGURIDAD
+    const mensaje = "⚠️ ¿Generar PROFORMA OFICIAL?\n\nEsta acción consumirá el número actual y registrará los datos en el historial.\n\n💡 Sugerencia: Si solo deseas enviar un presupuesto tentativo para revisión, cancela aquí y utiliza el botón de WhatsApp.";
+    if (!confirm(mensaje)) {
+        return; // Si el usuario cancela, la función muere aquí y no se gasta el número.
+    }
+
     const toast = document.getElementById('status-toast');
     toast.innerText = "📄 Preparando Proforma...";
     toast.style.display = 'block';
 
     // 1. ASIGNAR NÚMERO (Ya precargado o N.I. de emergencia)
+
     if (numeroProformaListo === "Cargando...") {
         let numEmergencia = parseInt(localStorage.getItem('mf_num_proforma')) || 1;
         numeroProformaListo = "N.I. " + numEmergencia.toString().padStart(4, '0');
     }
     document.getElementById('p_num_secuencia').innerText = "N° " + numeroProformaListo;
+
+    // NUEVO: Aumentamos el contador local para que el modo offline NUNCA repita números
+    let numActualLocal = parseInt(localStorage.getItem('mf_num_proforma')) || 1;
+    localStorage.setItem('mf_num_proforma', numActualLocal + 1);
+
 
     // 2. SINCRONIZAR EN SEGUNDO PLANO (Sin esperar a la nube)
     guardarEnHistorial(true);
@@ -1795,8 +1828,17 @@ function ejecutarImpresionMasterflexo(tipo) {
 
     document.body.classList.remove('modo-orden');
     document.body.classList.add('modo-proforma');
-    window.print();
+        window.print();
+    
+    // NUEVO: Preparar la App para una nueva proforma sin necesidad de cerrar/recargar
+    numeroProformaListo = "Cargando...";
+    setTimeout(() => {
+        if (typeof obtenerNumeroSiguienteInmediato === 'function') {
+            obtenerNumeroSiguienteInmediato();
+        }
+    }, 1500); // Le damos 1.5s de respiro después de abrir la ventana de impresión
 }
+
 
 
 
@@ -2143,9 +2185,16 @@ function generarPDFOrdenTrabajo() {
 async function imprimirPedidoCompleto() {
     if(carritoGlobal.length === 0) { alert("El carrito está vacío."); return; }
     
+    // 0. VERIFICACIÓN DE SEGURIDAD PARA EL CARRITO
+    const mensaje = "⚠️ ¿Generar PROFORMA OFICIAL para este pedido múltiple?\n\nEsta acción consumirá el número actual de la secuencia.";
+    if (!confirm(mensaje)) {
+        return; // Detiene la función si el usuario cancela
+    }
+
     const toast = document.getElementById('status-toast');
     toast.innerText = "📄 Preparando Pedido...";
     toast.style.display = 'block';
+
 
     // 1. ASIGNAR NÚMERO PRECARGADO
     if (numeroProformaListo === "Cargando...") {
