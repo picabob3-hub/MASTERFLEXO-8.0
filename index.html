@@ -784,13 +784,19 @@
     <header class="main-header"><div class="logo-container"><img id="logo-preview" src=""></div></header>
       <!-- NUEVO: Indicador de número de proforma -->
     <div id="ui_num_proforma" class="no-print" style="position: absolute; top: 15px; right: 20px; font-size: 11px; color: #b0bec5; font-weight: bold; z-index: 100; letter-spacing: 1px;">N° ----</div>
-    <div class="header-strip no-print">
-        <div style="display:flex; gap:20px; align-items:center;">
+        <div class="header-strip no-print">
+        <div style="display:flex; gap:15px; align-items:center;">
+            
+            <!-- BOTÓN CON TEXTO "NUEVO +" -->
+            <span onclick="limpiarParaNuevaProforma()" title="Nueva Proforma" style="cursor: pointer; color: white; font-size: 11px; font-weight: bold; border: 1px solid rgba(255,255,255,0.6); padding: 5px 12px; border-radius: 15px; background: rgba(255,255,255,0.15); display: flex; align-items: center; letter-spacing: 1px; transition: 0.2s;">NUEVO <b style="font-size: 14px; margin-left: 3px;">+</b></span>
+            
             <span class="settings-gear" onclick="guardarEnHistorial()" title="Guardar">💾</span>
             <span class="settings-gear" onclick="abrirHistorial()" title="Historial">📋</span>
-            <span class="settings-gear" onclick="toggleConfig(true)">⚙</span>
+            <!-- ICONO DE 3 LÍNEAS PARA AJUSTES -->
+            <span class="settings-gear" onclick="toggleConfig(true)">☰</span>
         </div>
     </div>
+
 
     <section class="shared-data">
         <div class="grid-inputs">
@@ -1922,13 +1928,14 @@ async function guardarEnHistorial(desdeImpresion = false) {
         const controller = new AbortController();
         setTimeout(() => controller.abort(), 6000); 
 
-        await fetch(CLOUD_URL, { 
+                await fetch(CLOUD_URL, { 
             method: "POST", 
             mode: "no-cors", 
-            headers: { "Content-Type": "application/json" }, 
+            headers: { "Content-Type": "text/plain;charset=utf-8" }, 
             body: JSON.stringify(datosCompletos),
             signal: controller.signal
         });
+
 
         if(!desdeImpresion) {
             toast.innerText = "✅ Sincronizado en Nube";
@@ -2306,12 +2313,13 @@ async function sincronizarPendientes() {
 
     for (let i = 0; i < pendientes.length; i++) {
         try {
-            await fetch(CLOUD_URL, { 
+                        await fetch(CLOUD_URL, { 
                 method: "POST", 
                 mode: "no-cors", 
-                headers: { "Content-Type": "application/json" }, 
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
                 body: JSON.stringify(pendientes[i]) 
             });
+
             // Si tiene éxito, lo quitamos de la cola
             pendientes.splice(i, 1);
             i--; 
