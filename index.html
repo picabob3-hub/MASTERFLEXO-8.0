@@ -753,7 +753,7 @@
 <body>
 <div id="splash-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d47a1; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 99999; transition: opacity 0.5s ease;">
     <img src="logotipo-aplicación.png" style="width: 120px; height: 120px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin-bottom: 20px;">
-    <div style="color: white; font-weight: bold; font-size: 18px; letter-spacing: 2px;">MASTER FLEXO 6.0</div>
+    <div style="color: white; font-weight: bold; font-size: 18px; letter-spacing: 2px;">MASTER FLEXO 8.0</div>
     <div style="margin-top: 20px; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #ffffff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
 </div>
 
@@ -794,6 +794,11 @@
     <section class="shared-data">
         <div class="grid-inputs">
             <div><label>CLIENTE</label><input type="text" id="c_nom" placeholder="Nombre del Cliente..."></div>
+            <div>
+    <label>PRODUCTO / DESCRIPCIÓN</label>
+    <input type="text" id="c_producto" placeholder="Ej: Yogurt 400g / Aceite 1L...">
+</div>
+
             <div class="grid-row">
                 <div><label>RUC/CI</label><input type="text" id="c_ruc" placeholder="0000000000"></div>
                 <div><label>FECHA</label><input type="text" id="fecha" readonly></div>
@@ -1067,14 +1072,18 @@
     </div>
 
     <div class="client-section">
-        <div class="info-box">
-            <div class="box-header">Cliente</div>
-            <div class="box-body">
-                <strong id="p_cliente"></strong><br>
-                <span id="p_ruc"></span>
+    <div class="info-box">
+        <div class="box-header">Cliente y Producto</div>
+        <div class="box-body">
+            <strong id="p_cliente"></strong><br>
+            <span id="p_ruc"></span><br>
+            <div style="margin-top:5px; border-top:1px solid #eee; padding-top:5px;">
+                <strong>PRODUCTO:</strong> <span id="p_prod_imp"></span>
             </div>
         </div>
     </div>
+</div>
+
 
     <table class="pro-table">
         <thead>
@@ -1131,8 +1140,31 @@
     };
 
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxToVS2ctOsuJQY4-lZ1pTrf99Wq1pujS-T9La4V5aiIY7UhjOjCyD_DWWwhFfZ6SXpVw/exec";
+    
+    // --- NUEVO: SISTEMA DE NUMERACIÓN INSTANTÁNEA ---
+let numeroProformaListo = "Cargando...";
 
-    window.onload = () => {
+async function obtenerNumeroSiguienteInmediato() {
+    try {
+        // Intentamos pedir el número a la nube de inmediato
+        const response = await fetch(CLOUD_URL);
+        if (response.ok) {
+            const data = await response.text();
+            numeroProformaListo = data.padStart(4, '0');
+        } else { throw new Error(); }
+    } catch (e) {
+        // Si no hay internet al abrir la App, usamos el respaldo local con prefijo N.I.
+        let numLocal = parseInt(localStorage.getItem('mf_num_proforma')) || 1;
+        numeroProformaListo = "N.I. " + numLocal.toString().padStart(4, '0');
+    }
+}
+
+            window.onload = () => {
+        // --- NUEVO: Carga el número de proforma en segundo plano de inmediato ---
+        if (typeof obtenerNumeroSiguienteInmediato === 'function') {
+            obtenerNumeroSiguienteInmediato();
+        }
+
         // 1. Carga de datos inicial
         try {
             const fechaInput = document.getElementById('fecha');
@@ -1148,6 +1180,10 @@
             }, 100);
             
             switchApp('mod_cirel');
+            
+            // Intentar sincronizar lo que quedó pendiente al abrir la App
+            sincronizarPendientes(); 
+            
         } catch (e) {
             console.error("Error en carga:", e);
         }
@@ -1167,9 +1203,12 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
                 .then(reg => console.log('PWA Lista'))
-                .catch(err => console.log('Error PWA', err));
+                .catch(err => console.error('Error PWA', err));
         }
     };
+
+
+
 
     function loadAll() {
         CONFIG_IDS.forEach((id, i) => {
@@ -1658,21 +1697,27 @@
    FUNCIÓN DE IMPRESIÓN (CORREGIDA: SIN SIGLAS + TEXTO "INCL. IVA")
    =========================================================== */
 function ejecutarImpresionMasterflexo(tipo) {
-    
-    // 1. Guardado en segundo plano
-    if(typeof guardarEnHistorial === 'function') {
-        guardarEnHistorial(true).catch(err => console.log("Error guardado:", err));
+    const toast = document.getElementById('status-toast');
+    toast.innerText = "📄 Preparando Proforma...";
+    toast.style.display = 'block';
+
+    // 1. ASIGNAR NÚMERO (Ya precargado o N.I. de emergencia)
+    if (numeroProformaListo === "Cargando...") {
+        let numEmergencia = parseInt(localStorage.getItem('mf_num_proforma')) || 1;
+        numeroProformaListo = "N.I. " + numEmergencia.toString().padStart(4, '0');
     }
+    document.getElementById('p_num_secuencia').innerText = "N° " + numeroProformaListo;
 
-    // 2. Preparación Visual
-    let numActual = parseInt(localStorage.getItem('mf_num_proforma')) || 1;
-    document.getElementById('p_num_secuencia').innerText = "N° " + numActual.toString().padStart(4, '0');
-    localStorage.setItem('mf_num_proforma', numActual + 1);
+    // 2. SINCRONIZAR EN SEGUNDO PLANO (Sin esperar a la nube)
+    guardarEnHistorial(true);
+    setTimeout(() => { toast.style.display = 'none'; }, 600);
 
+    // 3. DATOS DE CABECERA
     const logo = localStorage.getItem('mf_logo');
     if(logo) document.getElementById('print_logo_img').src = logo;
     
     document.getElementById('p_cliente').innerText = document.getElementById('c_nom').value || "CONSUMIDOR FINAL";
+    document.getElementById('p_prod_imp').innerText = document.getElementById('c_producto').value || "NO ESPECIFICADO";
     document.getElementById('p_ruc').innerText = "RUC/CI: " + (document.getElementById('c_ruc').value || "9999999999");
     document.getElementById('p_fecha').innerText = document.getElementById('fecha').value;
     document.getElementById('p_footer_text').innerHTML = (document.getElementById('txt_datos_empresa').value || "").replace(/\n/g, '<br>');
@@ -1682,85 +1727,77 @@ function ejecutarImpresionMasterflexo(tipo) {
     const tablaCuerpo = document.getElementById('p_tabla_cuerpo');
     tablaCuerpo.innerHTML = ""; 
 
-    // --- VARIABLES DE CÁLCULO ---
     let subtotalFlexo = 0;
     let valorCirelTotal = 0; 
     let cantidadCireles = document.getElementById('cn_cir').value || 1; 
 
-    // A. Si es FLEXO
     if (tipo === 'flexo') {
         const matNom = document.querySelector('.f-mat-card.selected') ? document.querySelector('.f-mat-card.selected').innerText : "Etiquetas";
         const cant = parseFloat(document.getElementById('f_tot').value) || 0;
-        const ancho = document.getElementById('cw').value;
-        const alto = document.getElementById('ch').value;
-        const subtotalFlexoUI = parseFloat(document.getElementById('f_sub').innerText.replace('$ ', '')) || 0;
-        subtotalFlexo = subtotalFlexoUI;
+        subtotalFlexo = parseFloat(document.getElementById('f_sub').innerText.replace('$ ', '')) || 0;
         
         tablaCuerpo.innerHTML += `
             <tr>
-                <td><strong>Producción: ${matNom}</strong><br><small>${ancho}x${alto} mm ${currentLam !== 'ninguno' ? '+ ' + currentLam : ''}</small></td>
+                <td><strong>Producción: ${matNom}</strong><br><small>${document.getElementById('cw').value}x${document.getElementById('ch').value} mm ${currentLam !== 'ninguno' ? '+ ' + currentLam : ''}</small></td>
                 <td class="col-center">${cant}</td>
                 <td class="col-right">$ ${(subtotalFlexo/cant).toFixed(4)}</td>
                 <td class="col-right">$ ${subtotalFlexo.toFixed(2)}</td>
             </tr>`;
-
-        if (vincularCirel) {
-            valorCirelTotal = parseFloat(document.getElementById('f_res_solo_cirel').innerText.replace('$ ', '')) || 0;
-        }
-
+        if (vincularCirel) valorCirelTotal = parseFloat(document.getElementById('f_res_solo_cirel').innerText.replace('$ ', '')) || 0;
     } else {
-        // B. Si es solo CIREL
         subtotalFlexo = parseFloat(document.getElementById('cr_sub').innerText.replace('$ ', '')) || 0;
-        
-        tablaCuerpo.innerHTML += `
-            <tr>
-                <td><strong>Servicio de Cyrel (Placas)</strong></td>
-                <td class="col-center">${cantidadCireles}</td>
-                <td class="col-right">$ ${(subtotalFlexo/cantidadCireles).toFixed(2)}</td>
-                <td class="col-right">$ ${subtotalFlexo.toFixed(2)}</td>
-            </tr>`;
+        tablaCuerpo.innerHTML += `<tr><td><strong>Servicio de Cyrel (Placas)</strong></td><td class="col-center">${cantidadCireles}</td><td class="col-right">$ ${(subtotalFlexo/cantidadCireles).toFixed(2)}</td><td class="col-right">$ ${subtotalFlexo.toFixed(2)}</td></tr>`;
     }
 
-    // --- TOTALES ---
+    // 4. TOTALES CON DESCUENTO E IVA
     const ivaPorc = (parseFloat(localStorage.getItem('mf_iva')) || 15) / 100;
+    const descPorc = parseFloat(document.getElementById('f_desc_extra').value) || 0;
+    
+    // Calculamos el valor del descuento basándonos en el subtotal
+    const valorDescDolar = (subtotalFlexo / (1 - descPorc/100)) * (descPorc/100);
+    const subtotalConDescuento = subtotalFlexo; // Ya viene descontado de la interfaz
+    const subtotalOriginal = subtotalFlexo + valorDescDolar;
+    
     const valorIVAFlexo = subtotalFlexo * ivaPorc;
     const totalFlexoConIVA = subtotalFlexo + valorIVAFlexo;
     const granTotalFinal = totalFlexoConIVA + valorCirelTotal;
 
     const contenedorTotales = document.querySelector('.totals-table');
-    
-    // --- AQUÍ ESTÁ EL CAMBIO SOLICITADO ---
-    // Se eliminó "jgs" y se agregó "Incl. IVA"
     contenedorTotales.innerHTML = `
         <tbody>
-            <tr><td class="t-label">Subtotal:</td><td>$ ${subtotalFlexo.toFixed(2)}</td></tr>
-            <tr><td class="t-label">IVA (15%):</td><td>$ ${valorIVAFlexo.toFixed(2)}</td></tr>
-            
             <tr>
-                <td class="t-label" style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">TOTAL ${tipo === 'flexo' ? 'ETIQUETAS' : 'SERVICIO'}:</td>
+                <td class="t-label">Subtotal:</td>
+                <td>$ ${subtotalOriginal.toFixed(2)}</td>
+            </tr>
+            ${descPorc > 0 ? `
+            <tr>
+                <td class="t-label" style="color:#c62828;">Descuento (${descPorc}%):</td>
+                <td style="color:#c62828;">-$ ${valorDescDolar.toFixed(2)}</td>
+            </tr>` : ''}
+            <tr>
+                <td class="t-label">IVA (15%):</td>
+                <td>$ ${valorIVAFlexo.toFixed(2)}</td>
+            </tr>
+            <tr>
+                <td class="t-label" style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">TOTAL ETIQUETAS:</td>
                 <td style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">$ ${totalFlexoConIVA.toFixed(2)}</td>
             </tr>
-
             ${valorCirelTotal > 0 ? `
-                <tr>
-                    <td class="t-label" style="padding-top:10px; color:#0d47a1;">+ Cirel (${cantidadCireles} Placas) Incl. IVA:</td>
-                    <td style="padding-top:10px; color:#0d47a1;">$ ${valorCirelTotal.toFixed(2)}</td>
-                </tr>
-            ` : ''}
-
+            <tr>
+                <td class="t-label" style="padding-top:10px; color:#0d47a1;">+ Cirel (${cantidadCireles} Placas) Incl. IVA:</td>
+                <td style="padding-top:10px; color:#0d47a1;">$ ${valorCirelTotal.toFixed(2)}</td>
+            </tr>` : ''}
             <tr>
                 <td class="t-grand" style="font-size:16px; border-top:2px solid #0d47a1;">TOTAL A CANCELAR:</td>
                 <td class="t-grand" style="font-size:16px; border-top:2px solid #0d47a1;">$ ${granTotalFinal.toFixed(2)}</td>
             </tr>
-        </tbody>
-    `;
+        </tbody>`;
 
-          // MODO IMPRESIÓN PROFORMA
     document.body.classList.remove('modo-orden');
     document.body.classList.add('modo-proforma');
-    
     window.print();
 }
+
 
 
 
@@ -1796,84 +1833,76 @@ function generarEsquemaVisual() {
 async function guardarEnHistorial(desdeImpresion = false) {
     const toast = document.getElementById('status-toast');
     
-    // Solo mostrar mensaje si es guardado manual
-    if(!desdeImpresion) {
-        toast.innerText = "☁️ Guardando..."; 
-        toast.style.display = 'block'; 
-        toast.style.background = "rgba(0,0,0,0.85)";
-    }
+    // TRADUCTOR DE MATERIALES
+    const nombresMateriales = {
+        'v1': 'PoliPro Blanco',
+        'v2': 'PoliPro Trans',
+        'v3': 'PoliPro Metal',
+        'v4': 'Propal Blanco',
+        'v5': 'Propal Metal',
+        'vM': 'Manual'
+    };
 
+    const esquemaBloques = generarEsquemaVisual();
+    const valorCirelTexto = document.getElementById('cr_total').innerText;
+    const valorCirelNumerico = parseFloat(valorCirelTexto.replace('$ ', '')) || 0;
+
+    // Preparamos los datos correctamente
+    const datosCompletos = {
+        id: Date.now(),
+        fecha: new Date().toLocaleString(),
+        cliente: document.getElementById('c_nom').value || "Cliente General",
+        producto: document.getElementById('c_producto').value || "Sin descripción", // <-- NUEVO
+        ruc: document.getElementById('c_ruc').value || "S/R",
+        total: document.getElementById('f_total').innerText,
+        subtotal: document.getElementById('f_sub').innerText,
+        material: nombresMateriales[currentMat] || 'No definido',
+        laminado: currentLam,
+        vincular: vincularCirel, 
+        cw: document.getElementById('cw').value,
+        ch: document.getElementById('ch').value,
+        f_tot: document.getElementById('f_tot').value,
+        total_cirel: valorCirelNumerico.toFixed(2),
+        num_proforma: document.getElementById('p_num_secuencia').innerText,
+        esquema: esquemaBloques
+    };
+
+    // 1. Guardado Local Siempre
+    let h = JSON.parse(localStorage.getItem('mf_historial') || '[]');
+    h.unshift(datosCompletos);
+    if (h.length > 50) h.pop();
+    localStorage.setItem('mf_historial', JSON.stringify(h));
+    renderizarHistorial();
+
+    // 2. Intento de envío a la Nube
     try {
-        const esquemaBloques = generarEsquemaVisual();
+        // Usamos un tiempo de espera para no bloquear la App si el internet está lento
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 6000); 
 
-        const datosCompletos = {
-            id: Date.now(),
-            fecha: new Date().toLocaleString(),
-            cliente: document.getElementById('c_nom').value || "Cliente General",
-            ruc: document.getElementById('c_ruc').value || "S/R",
-            
-            // Económicos
-            total: document.getElementById('f_total').innerText,
-            subtotal: document.getElementById('f_sub').innerText,
-            
-            // Estados y Config
-            material: currentMat,
-            laminado: currentLam,
-            vincular: vincularCirel, 
-
-            // --- DATOS CIREL ---
-            cw: document.getElementById('cw').value,
-            ch: document.getElementById('ch').value,
-            cgh: document.getElementById('cgh').value,
-            cgv: document.getElementById('cgv').value,
-            ccol: document.getElementById('ccol').value,
-            cfilas: document.getElementById('cfilas').value,
-            ctot: document.getElementById('ctot').value,
-            cn_cir: document.getElementById('cn_cir').value, // IMPORTANTE: Cantidad Cireles
-            
-            // --- DATOS FLEXO ---
-            f_cmB: document.getElementById('f_cmB').value,
-            f_etB: document.getElementById('f_etB').value,
-            f_tot: document.getElementById('f_tot').value,
-            f_anc: document.getElementById('f_anc').value,
-            f_desc_extra: document.getElementById('f_desc_extra').value,
-            f_extra: document.getElementById('f_extra').value,
-            
-            // Esquema Visual
-            esquema: esquemaBloques
-        };
-
-        // Guardado Local (LocalStorage)
-        let h = JSON.parse(localStorage.getItem('mf_historial') || '[]');
-        h.unshift(datosCompletos);
-        if (h.length > 50) h.pop(); // Máximo 50 registros
-        localStorage.setItem('mf_historial', JSON.stringify(h));
-        
-        // Actualizar la lista visualmente
-        renderizarHistorial();
-
-                // Envío a Google Sheets (Nube) EN SEGUNDO PLANO
-        fetch(CLOUD_URL, { 
+        await fetch(CLOUD_URL, { 
             method: "POST", 
             mode: "no-cors", 
             headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify(datosCompletos) 
-        }).catch(err => console.log("Nube error:", err));
+            body: JSON.stringify(datosCompletos),
+            signal: controller.signal
+        });
 
         if(!desdeImpresion) {
-            toast.innerText = "✅ Guardado";
+            toast.innerText = "✅ Sincronizado en Nube";
             toast.style.background = "#2e7d32";
+            toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 2000);
         }
-        return true;
-
-
     } catch (e) {
-        console.error("Error save:", e);
-        // Si falla, al menos retorna true para no bloquear la impresión
-        return true; 
+        // 3. SI FALLA: Guardar en cola de pendientes para después
+        let pendientes = JSON.parse(localStorage.getItem('mf_pendientes') || '[]');
+        pendientes.push(datosCompletos);
+        localStorage.setItem('mf_pendientes', JSON.stringify(pendientes));
+        console.log("Guardado en pendientes por falta de red");
     }
 }
+
 
 // 3. RENDERIZAR LISTA (Para que se vea el historial al abrirlo)
 function renderizarHistorial() {
@@ -1884,7 +1913,7 @@ function renderizarHistorial() {
     contenedor.innerHTML = h.map((i, index) => `
         <div onclick="cargarHistorial(${index})" style="border-bottom:1px solid #eee; padding:12px; cursor:pointer; background:white;" 
              onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='white'">
-            <strong style="color:var(--p-color);">${i.cliente}</strong><br>
+            <strong style="color:var(--p-color);">${i.cliente} - ${i.producto || ''}</strong><br>
             <div style="display:flex; justify-content:space-between; margin-top:4px;">
                 <span style="font-size:11px; color:#555;">${i.total}</span>
                 <span style="font-size:10px; color:#999;">${i.fecha}</span>
@@ -1983,15 +2012,19 @@ function agregarAlCarrito() {
     }
 
     const item = {
-        id: Date.now(),
-        descripcion: `${matNom} (${ancho}x${alto} mm) ${currentLam !== 'ninguno' ? '+ ' + currentLam : ''}`,
-        cantidad: cant,
-        subtotal: subtotalFlexo,
-        iva: ivaFlexo,
-        tieneCirel: vincularCirel,
-        valorCirel: valorCirel,
-        cantCireles: cantCireles
-    };
+    id: Date.now(),
+    // Añadimos el nombre del producto específico a la descripción
+    descripcion: `<b>${document.getElementById('c_producto').value || 'Producto'}</b><br>${matNom} (${ancho}x${alto} mm) ${currentLam !== 'ninguno' ? '+ ' + currentLam : ''}`,
+    cantidad: cant,
+    subtotal: subtotalFlexo,
+    iva: ivaFlexo,
+    tieneCirel: vincularCirel,
+    valorCirel: valorCirel,
+    cantCireles: cantCireles,
+    // Guardamos el porcentaje de descuento si existe
+    descP: parseFloat(document.getElementById('f_desc_extra').value) || 0 
+};
+
 
     carritoGlobal.push(item);
     actualizarIconoCarrito();
@@ -2107,18 +2140,35 @@ function generarPDFOrdenTrabajo() {
 /* ===========================================================
    IMPRESIÓN DEL CARRITO COMPLETO (DESGLOSE POR ETIQUETA + SUMA DE PLACAS)
    =========================================================== */
-function imprimirPedidoCompleto() {
+async function imprimirPedidoCompleto() {
     if(carritoGlobal.length === 0) { alert("El carrito está vacío."); return; }
     
-    // Preparar Cabeceras
-    let numActual = parseInt(localStorage.getItem('mf_num_proforma')) || 1;
-    document.getElementById('p_num_secuencia').innerText = "N° " + numActual.toString().padStart(4, '0');
-    localStorage.setItem('mf_num_proforma', numActual + 1);
+    const toast = document.getElementById('status-toast');
+    toast.innerText = "📄 Preparando Pedido...";
+    toast.style.display = 'block';
 
+    // 1. ASIGNAR NÚMERO PRECARGADO
+    if (numeroProformaListo === "Cargando...") {
+        let numEmergencia = parseInt(localStorage.getItem('mf_num_proforma')) || 1;
+        numeroProformaListo = "N.I. " + numEmergencia.toString().padStart(4, '0');
+    }
+    document.getElementById('p_num_secuencia').innerText = "N° " + numeroProformaListo;
+
+    // 2. SINCRONIZAR EN SEGUNDO PLANO
+    if(typeof guardarEnHistorial === 'function') {
+        let totalGlobalCarrito = 0;
+        carritoGlobal.forEach(item => { totalGlobalCarrito += (item.subtotal + item.iva + item.valorCirel); });
+        const totalOriginalUI = document.getElementById('f_total').innerText;
+        document.getElementById('f_total').innerText = "$ " + totalGlobalCarrito.toFixed(2);
+        guardarEnHistorial(true);
+        setTimeout(() => { document.getElementById('f_total').innerText = totalOriginalUI; }, 1000);
+    }
+
+    // 3. CABECERA
     const logo = localStorage.getItem('mf_logo');
     if(logo) document.getElementById('print_logo_img').src = logo;
-    
     document.getElementById('p_cliente').innerText = document.getElementById('c_nom').value || "CONSUMIDOR FINAL";
+    document.getElementById('p_prod_imp').innerText = "PEDIDO MULTIPRODUCTO";
     document.getElementById('p_ruc').innerText = "RUC/CI: " + (document.getElementById('c_ruc').value || "9999999999");
     document.getElementById('p_fecha').innerText = document.getElementById('fecha').value;
     document.getElementById('p_footer_text').innerHTML = (document.getElementById('txt_datos_empresa').value || "").replace(/\n/g, '<br>');
@@ -2128,81 +2178,66 @@ function imprimirPedidoCompleto() {
     const tablaCuerpo = document.getElementById('p_tabla_cuerpo');
     tablaCuerpo.innerHTML = ""; 
 
-    let sumSubtotal = 0;
-    let sumIva = 0;
-    let sumCirel = 0;
-    let totalPlacas = 0; // <--- AQUÍ ESTÁ EL CONTADOR DE PLACAS
+    let sumSubtotal = 0, sumIva = 0, sumCirel = 0, totalPlacas = 0, totalDescDolar = 0;
 
-    // Generar filas inyectando el detalle de IVA y Cireles por cada etiqueta
+    // 4. GENERAR FILAS CON DESCUENTO INDIVIDUAL
     carritoGlobal.forEach(item => {
         sumSubtotal += item.subtotal;
         sumIva += item.iva;
         sumCirel += item.valorCirel;
+        if (item.tieneCirel) totalPlacas += parseInt(item.cantCireles) || 0;
         
-        // Vamos sumando las placas al total general
-        if (item.tieneCirel && item.valorCirel > 0) {
-            totalPlacas += parseInt(item.cantCireles) || 0;
+        // Cálculo de descuento por este item específico
+        let descItemDolar = 0;
+        if(item.descP > 0) {
+            descItemDolar = (item.subtotal / (1 - item.descP/100)) * (item.descP/100);
+            totalDescDolar += descItemDolar;
         }
 
-        // Construimos el texto con el desglose individual
-        let detalleDesglose = `<div style="margin-top:6px; font-size:10px; color:#555;">`;
-        detalleDesglose += `▶ <b>Subtotal:</b> $${item.subtotal.toFixed(2)} | <b>IVA:</b> $${item.iva.toFixed(2)}`;
-        
-        if (item.tieneCirel && item.valorCirel > 0) {
-            detalleDesglose += `<br><span style="color:#0d47a1; font-weight:bold;">▶ Incluye ${item.cantCireles} Cirel(es): $${item.valorCirel.toFixed(2)} (Inc. IVA)</span>`;
-        }
-        detalleDesglose += `</div>`;
+        let detalleDesglose = `<div style="margin-top:6px; font-size:10px; color:#555;">` +
+            `▶ Subtotal: $${item.subtotal.toFixed(2)} | IVA: $${item.iva.toFixed(2)}` +
+            (item.descP > 0 ? `<br><span style="color:#c62828;">▶ Descuento aplicado (${item.descP}%): -$${descItemDolar.toFixed(2)}</span>` : "") +
+            (item.tieneCirel ? `<br><span style="color:#0d47a1; font-weight:bold;">▶ Incluye Cirel: $${item.valorCirel.toFixed(2)} (Inc. IVA)</span>` : "") +
+            `</div>`;
 
         tablaCuerpo.innerHTML += `
             <tr>
-                <td style="vertical-align: top;">
-                    <strong>Producción: ${item.descripcion.split('(')[0]}</strong><br>
-                    <small>${item.descripcion.substring(item.descripcion.indexOf('('))}</small>
-                    ${detalleDesglose}
-                </td>
-                <td class="col-center" style="vertical-align: top;">${item.cantidad}</td>
-                <td class="col-right" style="vertical-align: top;">$ ${(item.subtotal / item.cantidad).toFixed(4)}</td>
-                <td class="col-right" style="vertical-align: top;">$ ${item.subtotal.toFixed(2)}</td>
+                <td><strong>${item.descripcion}</strong>${detalleDesglose}</td>
+                <td class="col-center">${item.cantidad}</td>
+                <td class="col-right">$ ${(item.subtotal / item.cantidad).toFixed(4)}</td>
+                <td class="col-right">$ ${item.subtotal.toFixed(2)}</td>
             </tr>`;
     });
 
+    // 5. TOTALES CON DESCUENTO SUMADO
     const totalConIva = sumSubtotal + sumIva;
     const granTotalFinal = totalConIva + sumCirel;
+    const subtotalOriginalGlobal = sumSubtotal + totalDescDolar;
 
-    // Generar Totales respetando tu diagramación
     const contenedorTotales = document.querySelector('.totals-table');
     contenedorTotales.innerHTML = `
         <tbody>
-            <tr><td class="t-label">Subtotal General:</td><td>$ ${sumSubtotal.toFixed(2)}</td></tr>
-            <tr><td class="t-label">IVA General (15%):</td><td>$ ${sumIva.toFixed(2)}</td></tr>
-            
+            <tr><td class="t-label">Subtotal Pedido:</td><td>$ ${subtotalOriginalGlobal.toFixed(2)}</td></tr>
+            ${totalDescDolar > 0 ? `
             <tr>
-                <td class="t-label" style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">TOTAL ETIQUETAS:</td>
-                <td style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">$ ${totalConIva.toFixed(2)}</td>
-            </tr>
+                <td class="t-label" style="color:#c62828; font-weight:bold;">DESCUENTO TOTAL:</td>
+                <td style="color:#c62828; font-weight:bold;">-$ ${totalDescDolar.toFixed(2)}</td>
+            </tr>` : ''}
+            <tr><td class="t-label">IVA (15%):</td><td>$ ${sumIva.toFixed(2)}</td></tr>
+            <tr><td class="t-label" style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">TOTAL ETIQUETAS:</td><td style="font-weight:bold; color:#000; border-top:1px solid #ccc; padding-top:8px;">$ ${totalConIva.toFixed(2)}</td></tr>
+            ${sumCirel > 0 ? `<tr><td class="t-label" style="padding-top:10px; color:#0d47a1;">+ Cireles (${totalPlacas} Placas) Incl. IVA:</td><td style="padding-top:10px; color:#0d47a1;">$ ${sumCirel.toFixed(2)}</td></tr>` : ''}
+            <tr><td class="t-grand" style="font-size:16px; border-top:2px solid #0d47a1;">TOTAL A CANCELAR:</td><td class="t-grand" style="font-size:16px; border-top:2px solid #0d47a1;">$ ${granTotalFinal.toFixed(2)}</td></tr>
+        </tbody>`;
 
-            ${sumCirel > 0 ? `
-                <tr>
-                    <td class="t-label" style="padding-top:10px; color:#0d47a1;">+ Total Cireles (${totalPlacas} Placas) Incl. IVA:</td>
-                    <td style="padding-top:10px; color:#0d47a1;">$ ${sumCirel.toFixed(2)}</td>
-                </tr>
-            ` : ''}
-
-            <tr>
-                <td class="t-grand" style="font-size:16px; border-top:2px solid #0d47a1;">TOTAL A CANCELAR:</td>
-                <td class="t-grand" style="font-size:16px; border-top:2px solid #0d47a1;">$ ${granTotalFinal.toFixed(2)}</td>
-            </tr>
-        </tbody>
-    `;
-
-                cerrarCarrito();
-    
-    // MODO IMPRESIÓN PROFORMA
+    // 6. LANZAR IMPRESIÓN
+    setTimeout(() => { toast.style.display = 'none'; }, 600);
+    cerrarCarrito();
     document.body.classList.remove('modo-orden');
     document.body.classList.add('modo-proforma');
-    
     window.print();
 }
+
+
 
 
 // Registro del Service Worker para permitir la instalación
@@ -2212,6 +2247,30 @@ if ('serviceWorker' in navigator) {
             .then(reg => console.log('✅ PWA: Service Worker registrado con éxito', reg.scope))
             .catch(err => console.error('❌ PWA: Error al registrar el Service Worker', err));
     });
+}
+
+async function sincronizarPendientes() {
+    let pendientes = JSON.parse(localStorage.getItem('mf_pendientes') || '[]');
+    if (pendientes.length === 0) return;
+
+    console.log(`Intentando sincronizar ${pendientes.length} proformas pendientes...`);
+
+    for (let i = 0; i < pendientes.length; i++) {
+        try {
+            await fetch(CLOUD_URL, { 
+                method: "POST", 
+                mode: "no-cors", 
+                headers: { "Content-Type": "application/json" }, 
+                body: JSON.stringify(pendientes[i]) 
+            });
+            // Si tiene éxito, lo quitamos de la cola
+            pendientes.splice(i, 1);
+            i--; 
+        } catch (e) {
+            break; // Sigue sin internet, reintentar después
+        }
+    }
+    localStorage.setItem('mf_pendientes', JSON.stringify(pendientes));
 }
 
 
